@@ -978,7 +978,10 @@ export const Dashboard = () => {
                         <div>
                             <label className="text-[10px] font-semibold tracking-wider text-gray-400 dark:text-gray-500 block mb-1">Date</label>
                             <input
-                                type="date"
+                                type={actDate ? "date" : "text"}
+                                placeholder="DD-MM-YYYY"
+                                onFocus={(e) => (e.target.type = "date")}
+                                onBlur={(e) => !e.target.value && (e.target.type = "text")}
                                 value={actDate}
                                 onChange={e => setActDate(e.target.value)}
                                 max={getLocalDateStr()}

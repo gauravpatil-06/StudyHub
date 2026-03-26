@@ -358,12 +358,22 @@ export const Auth = () => {
                         )}
 
                         {/* Toggle Login/Register Mode */}
-                        <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                            {isLogin ? (
-                                <>Don't have an account? <button onClick={() => { setIsLogin(false); setIsAdminLogin(false); }} className="font-bold text-[#47C4B7] hover:underline transition-all ml-1">Sign up</button></>
-                            ) : (
-                                <>Already have an account? <button onClick={() => setIsLogin(true)} className="font-bold text-[#47C4B7] hover:underline transition-all ml-1">Sign in</button></>
-                            )}
+                        <div className="mt-4 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 space-y-4">
+                            <div>
+                                {isLogin ? (
+                                    <>Don't have an account? <button onClick={() => { setIsLogin(false); setIsAdminLogin(false); }} className="font-bold text-[#47C4B7] hover:underline transition-all ml-1">Sign up</button></>
+                                ) : (
+                                    <>Already have an account? <button onClick={() => setIsLogin(true)} className="font-bold text-[#47C4B7] hover:underline transition-all ml-1">Sign in</button></>
+                                )}
+                            </div>
+                            
+                            <button 
+                                onClick={() => navigate('/')} 
+                                className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-[#47C4B7] hover:text-[#3bb1a5] transition-all mx-auto group"
+                            >
+                                <span className="group-hover:-translate-x-1 transition-all">←</span>
+                                Back to Home
+                            </button>
                         </div>
                     </div>
                 </div>

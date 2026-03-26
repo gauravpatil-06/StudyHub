@@ -190,7 +190,7 @@ export const LandingPage = () => {
                             initial={{ opacity: 0, scale: 0.95, y: -5 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                            className="absolute top-20 right-0 w-40 bg-white dark:bg-gray-900 border-l border-b border-gray-200 dark:border-white/5 p-4 rounded-bl-2xl sm:hidden z-50 shadow-2xl shadow-black/10"
+                            className="absolute top-16 right-0 w-full sm:w-48 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-white/5 p-4 sm:hidden z-50 shadow-2xl shadow-black/10"
                         >
                             <div className="flex flex-col gap-3">
                                 {['Home', 'About'].map((tab) => (
@@ -265,8 +265,8 @@ export const LandingPage = () => {
                             </button>
                             <button
                                 onClick={() => {
-                                    const aboutSection = document.getElementById('about-section');
-                                    if (aboutSection) aboutSection.scrollIntoView({ behavior: 'smooth' });
+                                    setActiveTab('About');
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
                                 className="flex-1 sm:flex-none px-4 sm:px-8 py-3.5 sm:py-4 bg-transparent border-2 border-[#47C4B7] text-[#47C4B7] rounded-xl font-bold text-[11px] sm:text-sm hover:bg-[#47C4B7]/5 transition-all active:scale-95 flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap"
                             >
@@ -577,6 +577,14 @@ export const LandingPage = () => {
                                             whileHover={{ x: 5 }}
                                             whileTap={{ scale: 0.98, x: 7 }}
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                            onClick={() => {
+                                                if (item === 'About') {
+                                                    setActiveTab('About');
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                } else {
+                                                    navigate('/login');
+                                                }
+                                            }}
                                             className="flex items-center gap-1.5 group cursor-pointer hover:text-[#47C4B7] transition-colors"
                                         >
                                             <ChevronRight className="text-[#3b82f6] sm:w-[14px]" size={10} />
@@ -607,6 +615,7 @@ export const LandingPage = () => {
                                             whileHover={{ x: 5 }}
                                             whileTap={{ scale: 0.98, x: 7 }}
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                            onClick={() => navigate('/login')}
                                             className="flex items-center gap-1.5 group cursor-pointer hover:text-[#47C4B7] transition-colors"
                                         >
                                             <ChevronRight className="text-[#3b82f6] sm:w-[14px]" size={10} />
@@ -631,6 +640,13 @@ export const LandingPage = () => {
                                             whileHover={{ x: 5 }}
                                             whileTap={{ scale: 0.98, x: 7 }}
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                            onClick={() => {
+                                                if (link === 'Login') navigate('/login');
+                                                else {
+                                                    setActiveTab(link);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }
+                                            }}
                                             className="flex items-center gap-1.5 group cursor-pointer hover:text-[#47C4B7] transition-colors"
                                         >
                                             <ChevronRight className="text-[#3b82f6] sm:w-[14px]" size={10} />

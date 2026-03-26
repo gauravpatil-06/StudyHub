@@ -281,7 +281,7 @@ export const About = () => {
     ];
 
     return (
-        <div className="pb-4 space-y-4 sm:space-y-6 max-w-full px-2 sm:px-0">
+        <div className="space-y-6 pb-10 max-w-full px-0">
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}

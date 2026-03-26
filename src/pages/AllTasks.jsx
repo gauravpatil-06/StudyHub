@@ -309,12 +309,28 @@ export const AllTasks = () => {
                             <div className="flex items-center gap-2 shrink-0">
                                 {/* From Date */}
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
-                                    <input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value, timeFilter: 'all' })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
+                                    <input 
+                                        type={filters.from ? "date" : "text"} 
+                                        placeholder="DD-MM-YYYY"
+                                        onFocus={(e) => (e.target.type = "date")}
+                                        onBlur={(e) => !e.target.value && (e.target.type = "text")}
+                                        value={filters.from} 
+                                        onChange={e => setFilters({ ...filters, from: e.target.value, timeFilter: 'all' })} 
+                                        className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" 
+                                    />
                                 </div>
 
                                 {/* To Date */}
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
-                                    <input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value, timeFilter: 'all' })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
+                                    <input 
+                                        type={filters.to ? "date" : "text"} 
+                                        placeholder="DD-MM-YYYY"
+                                        onFocus={(e) => (e.target.type = "date")}
+                                        onBlur={(e) => !e.target.value && (e.target.type = "text")}
+                                        value={filters.to} 
+                                        onChange={e => setFilters({ ...filters, to: e.target.value, timeFilter: 'all' })} 
+                                        className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" 
+                                    />
                                 </div>
                             </div>
 
