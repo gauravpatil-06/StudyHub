@@ -311,12 +311,12 @@ export const ActivityLog = () => {
                             <RefreshCw className="animate-spin text-[#47C4B7]" size={32} />
                         </div>
                     ) : groupedActivities.length === 0 ? (
-                        <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                        <div className="py-20 flex flex-col items-center justify-center text-gray-400 text-center px-6">
                             <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-full mb-4">
                                 <Search size={40} className="opacity-20" />
                             </div>
-                            <p className="font-bold text-gray-600 dark:text-gray-300">No study hours logged yet</p>
-                            <p className="text-[15px] opacity-60 mt-1">Start logging your study sessions to track your progress</p>
+                            <p className="text-[10px] sm:text-[14px] font-bold text-gray-600 dark:text-gray-300">No study hours logged yet</p>
+                            <p className="text-[8px] sm:text-[10px] opacity-60 mt-1">Start logging your study sessions to track your progress</p>
                         </div>
                     ) : (
                         <div className="space-y-6 pb-0">

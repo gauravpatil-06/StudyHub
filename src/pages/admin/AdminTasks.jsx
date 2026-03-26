@@ -477,10 +477,10 @@ export const AdminTasks = () => {
                 </table>
                 {filteredTasks.length === 0 && (
                     <div className="py-24 text-center">
-                        <div className="bg-[#47C4B7]/10 w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                            <Info size={30} className="text-[#47C4B7]" />
+                        <div className="bg-[#47C4B7]/10 w-12 h-12 sm:w-16 sm:h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                            <Info size={24} className="text-[#47C4B7]" />
                         </div>
-                        <p className="text-gray-400 font-bold italic text-sm tracking-tight">No tasks matching your focus found.</p>
+                        <p className="text-[12px] sm:text-sm text-gray-400 font-bold italic tracking-tight text-center px-4">No tasks matching your focus found.</p>
                     </div>
                 )}
             </div>

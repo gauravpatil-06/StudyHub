@@ -403,10 +403,10 @@ export const StudyMaterials = () => {
 
             <div className="space-y-6">
                 {filteredAndGroupedMaterials.length === 0 ? (
-                    <div className="py-32 text-center space-y-4">
-                        <FileType size={56} className="text-[#47C4B7] opacity-40 mx-auto mb-2" />
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white opacity-80 tracking-tight">No study materials uploaded yet.</h3>
-                        <p className="text-gray-500 dark:text-gray-400 text-[15px] font-medium">Your study resources will appear here once uploaded.</p>
+                    <div className="py-20 sm:py-32 text-center space-y-1.5 sm:space-y-3 px-10">
+                        <FileType size={36} className="text-[#47C4B7] opacity-35 mx-auto mb-1.5" />
+                        <h3 className="text-[10px] sm:text-[14px] font-bold text-gray-900 dark:text-white opacity-80 tracking-tight">No study materials uploaded yet.</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-[8px] sm:text-[10px] font-medium">Your study resources will appear here once uploaded.</p>
                     </div>
                 ) : (
                     filteredAndGroupedMaterials.map(([date, items], gIndex) => (

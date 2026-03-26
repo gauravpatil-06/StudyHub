@@ -1426,10 +1426,10 @@ export const Dashboard = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="py-8 flex flex-col items-center justify-center text-gray-400">
-                            <Clock size={36} className="mb-2 opacity-20" />
-                            <p className="font-bold text-gray-500 text-[15px] text-center">No study session today.</p>
-                            <p className="text-[13px] opacity-60 text-center">Your focus timer activity will appear here.</p>
+                        <div className="py-8 flex flex-col items-center justify-center text-gray-400 px-4">
+                            <Clock size={32} className="mb-2 opacity-20" />
+                            <p className="text-[13px] sm:text-[15px] font-bold text-gray-500 text-center">No study session today.</p>
+                            <p className="text-[11px] sm:text-[13px] opacity-60 text-center">Your focus timer activity will appear here.</p>
                         </div>
                     )}
                 </div>

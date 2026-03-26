@@ -360,12 +360,12 @@ export const AllTasks = () => {
 
             <div className="space-y-8 mt-4">
                 {filteredAndGroupedTasks.length === 0 ? (
-                    <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                    <div className="py-20 flex flex-col items-center justify-center text-gray-400 text-center px-6">
                         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-full mb-4">
                             <Search size={40} className="opacity-20" />
                         </div>
-                        <p className="font-bold text-gray-600 dark:text-gray-300">No tasks found</p>
-                        <p className="text-[15px] opacity-60">Try adding a new task or changing your search</p>
+                        <p className="text-[10px] sm:text-[14px] font-bold text-gray-600 dark:text-gray-300">No tasks found</p>
+                        <p className="text-[8px] sm:text-[10px] opacity-60">Try adding a new task or changing your search</p>
                     </div>
                 ) : (
                     <div className="space-y-6 pb-0">
