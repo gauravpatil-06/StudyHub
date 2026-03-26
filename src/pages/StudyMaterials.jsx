@@ -194,7 +194,10 @@ export const StudyMaterials = () => {
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
-            link.download = originalName;
+            
+            const safeOriginalName = originalName || fileUrl.split('/').pop() || 'document.pdf';
+            const cleanFileName = decodeURIComponent(safeOriginalName).replace(/-\d{13}-\d+(?=\.[^.]+$)/, '');
+            link.download = cleanFileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -268,7 +271,7 @@ export const StudyMaterials = () => {
     };
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1400px] mx-auto">
+        <div className="space-y-6 pb-10 max-w-full px-0">
             <PageHeader
                 icon={BookOpen}
                 title="Study Materials"
@@ -400,7 +403,7 @@ export const StudyMaterials = () => {
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
                                     <Calendar size={14} className="text-[#47C4B7]" />
-                                    <span className="text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">{date}</span>
+                                    <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">{date}</span>
                                 </div>
                                 <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800/60" />
                             </div>
@@ -426,18 +429,18 @@ export const StudyMaterials = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex-1 min-w-0">
+                                        <div className="flex-1 min-w-0 flex flex-col">
                                             <div className="flex justify-between items-start gap-2 mb-1.5">
-                                                <h4 className="text-[15px] sm:text-base font-bold text-gray-800 dark:text-gray-200 tracking-tight truncate group-hover:text-[#47C4B7] transition-colors">{m.title}</h4>
+                                                <h4 className="text-[12px] sm:text-[15px] font-bold truncate text-gray-700 dark:text-gray-300 group-hover:text-[#47C4B7] transition-colors">{m.title}</h4>
                                             </div>
-                                            <div className="mt-1 mb-2">
-                                                <p className={`text-[10px] sm:text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed font-medium transition-all duration-300 ${expandedMaterials.has(m._id) ? '' : 'line-clamp-2'}`}>
+                                            <div className="mt-1 mb-1">
+                                                <p className={`text-[11px] sm:text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed font-medium transition-all duration-300 break-words overflow-hidden ${expandedMaterials.has(m._id) ? '' : 'line-clamp-2'}`}>
                                                     {m.description || 'Quickly review your uploaded material.'}
                                                 </p>
                                                 {m.description && m.description.length > 90 && (
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); toggleExpandMaterial(m._id); }}
-                                                        className="text-[10px] sm:text-[11px] font-black text-[#47C4B7] hover:underline mt-1 flex items-center gap-1"
+                                                        className="text-[9px] sm:text-[11px] font-black text-[#47C4B7] hover:underline mt-0.5 flex items-center gap-1"
                                                     >
                                                         {expandedMaterials.has(m._id) ? 'Show Less' : 'Read more'}
                                                     </button>
@@ -454,22 +457,23 @@ export const StudyMaterials = () => {
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 pt-3 sm:pt-4 mt-auto border-t border-gray-100 dark:border-gray-800/60">
-                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-red-600 dark:text-red-400 text-[10px] sm:text-[11px] font-bold shrink-0">
+                                            <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 pt-1.5 sm:pt-2 mt-auto border-t border-gray-100 dark:border-gray-800/60">
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-red-600 dark:text-red-400 text-[10px] sm:text-[11px] font-black shrink-0 relative z-10">
                                                     <a
                                                         href={`${BASE_URL}${m.fileUrl}`} target="_blank" rel="noreferrer"
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                         title="Open File"
                                                     >
-                                                        <FileText size={12} className="sm:w-[14px] sm:h-[14px]" /> Open
+                                                        <FileText size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className={viewMode === 'grid' ? 'hidden xs:inline sm:inline' : 'inline'}>Open</span>
                                                     </a>
                                                     <button
-                                                        onClick={(e) => { e.stopPropagation(); handleDownload(m.fileUrl, m.fileName); }}
+                                                        type="button"
+                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDownload(m.fileUrl, m.fileName); }}
                                                         className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                         title="Download Original"
                                                     >
-                                                        <Download size={12} className="sm:w-[14px] sm:h-[14px]" /> Download
+                                                        <Download size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className={viewMode === 'grid' ? 'hidden sm:inline' : 'inline'}>Download</span>
                                                     </button>
                                                 </div>
 
@@ -478,10 +482,10 @@ export const StudyMaterials = () => {
 
                                                 <div className="flex items-center gap-px shrink-0">
                                                     <button onClick={(e) => { e.stopPropagation(); openEditModal(m); }} className="p-1 text-gray-400 hover:text-blue-500 transition-colors" title="Edit Material">
-                                                        <Pencil size={14} className="sm:w-[16px] sm:h-[16px]" />
+                                                        <Pencil className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                                                     </button>
                                                     <button onClick={(e) => { e.stopPropagation(); setDeletingMaterialId(m._id); }} className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Delete Material">
-                                                        <Trash2 size={14} className="sm:w-[16px] sm:h-[16px]" />
+                                                        <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                                                     </button>
                                                 </div>
                                             </div>

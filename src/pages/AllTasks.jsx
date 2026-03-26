@@ -109,11 +109,11 @@ export const AllTasks = () => {
                 await updateTask(editingTask._id, {
                     title,
                     description,
-                    ...(uploadedPdfUrl ? { pdfUrl: uploadedPdfUrl } : {})
+                    ...(uploadedPdfUrl ? { pdfUrl: uploadedPdfUrl, fileName: pdfFile ? pdfFile.name : editingTask.fileName } : {})
                 });
                 toast.success('Task updated!');
             } else {
-                await addTask(title, description, uploadedPdfUrl);
+                await addTask(title, description, uploadedPdfUrl, pdfFile ? pdfFile.name : '');
                 toast.success('Task added successfully!');
             }
 
@@ -172,7 +172,7 @@ export const AllTasks = () => {
         });
     };
 
-    const handleDownloadFile = async (fileUrl) => {
+    const handleDownloadFile = async (fileUrl, originalName) => {
         try {
             const loadingToast = toast.loading('Downloading file...');
             const url = `${BASE_URL}${fileUrl}`;
@@ -182,8 +182,10 @@ export const AllTasks = () => {
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
-            const fileName = fileUrl.split('/').pop() || 'document.pdf';
-            link.download = decodeURIComponent(fileName);
+            
+            const safeOriginalName = originalName || fileUrl.split('/').pop() || 'document.pdf';
+            const cleanFileName = decodeURIComponent(safeOriginalName).replace(/-\d{13}-\d+(?=\.[^.]+$)/, '').replace(/-/g, ' ');
+            link.download = cleanFileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -246,7 +248,7 @@ export const AllTasks = () => {
     // PageLoader handled by AppLayout transition
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1400px] mx-auto">
+        <div className="space-y-4 sm:space-y-6 pb-10 max-w-full px-0">
             <PageHeader
                 icon={CheckSquare}
                 title="All Tasks"
@@ -350,7 +352,7 @@ export const AllTasks = () => {
                         <p className="text-[15px] opacity-60">Try adding a new task or changing your search</p>
                     </div>
                 ) : (
-                    <div className="space-y-6 pb-12">
+                    <div className="space-y-6 pb-0">
                         {filteredAndGroupedTasks.map(([date, groupTasks], index) => (
                             <HoverCard
                                 key={date}
@@ -361,7 +363,7 @@ export const AllTasks = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
                                         <Calendar size={14} className="text-[#47C4B7]" />
-                                        <span className="text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                        <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
                                             {date}
                                         </span>
                                     </div>
@@ -396,79 +398,107 @@ export const AllTasks = () => {
                                                         </button>
 
                                                         {/* Content */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className={`text-base font-bold truncate transition-colors ${task.status === 'completed' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                                                                {task.title}
-                                                            </h4>
-                                                            {task.description && (
-                                                                <div className="mt-1">
-                                                                    <p className={`text-[15px] text-gray-500 dark:text-gray-400 leading-snug transition-all duration-300 ${expandedTasks.has(task._id) ? '' : 'line-clamp-1'}`}>
-                                                                        {task.description}
+                                                        <div className="flex-1 min-w-0 flex flex-row items-center gap-2">
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className={`text-[12px] sm:text-[15px] font-bold truncate transition-colors ${task.status === 'completed' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                                                    {task.title}
+                                                                </h4>
+                                                                {task.description && (
+                                                                    <div className="mt-1">
+                                                                        <p className={`text-[12px] sm:text-[15px] text-gray-500 dark:text-gray-400 leading-snug break-words transition-all duration-300 ${expandedTasks.has(task._id) ? '' : 'line-clamp-1'}`}>
+                                                                            {task.description}
+                                                                        </p>
+                                                                        {task.description.length > 60 && (
+                                                                            <button
+                                                                                onClick={() => toggleExpandTask(task._id)}
+                                                                                className="text-[9px] sm:text-[11px] font-black text-[#47C4B7] hover:underline mt-0.5 flex items-center gap-1"
+                                                                            >
+                                                                                {expandedTasks.has(task._id) ? 'Show Less' : 'Read more'}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {task.createdAt && (
+                                                                    <p className="text-[10px] sm:text-[12px] text-gray-400 dark:text-gray-500 font-medium mt-1.5 flex items-center gap-1.5 whitespace-nowrap">
+                                                                        <Clock size={12} />
+                                                                        {new Date(task.createdAt).toLocaleString('en-US', {
+                                                                            month: 'short', day: 'numeric',
+                                                                            hour: '2-digit', minute: '2-digit'
+                                                                        })}
                                                                     </p>
-                                                                    {task.description.length > 60 && (
-                                                                        <button
-                                                                            onClick={() => toggleExpandTask(task._id)}
-                                                                            className="text-[11px] font-black text-[#47C4B7] hover:underline mt-0 flex items-center gap-1"
-                                                                        >
-                                                                            {expandedTasks.has(task._id) ? 'Show Less' : 'Read more'}
-                                                                        </button>
-                                                                    )}
+                                                                )}
+                                                            </div>
+
+                                                            {/* Only show Edit/Delete here on mobile if NO PDF - Vertically centered */}
+                                                            {!task.pdfUrl && (
+                                                                <div className="flex sm:hidden flex-row items-center gap-1 shrink-0">
+                                                                    <button
+                                                                        onClick={() => openEditModal(task)}
+                                                                        className="p-1 text-gray-400 hover:text-blue-500"
+                                                                        title="Edit Task"
+                                                                    >
+                                                                        <Pencil size={13} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setDeletingTaskId(task._id)}
+                                                                        className="p-1 text-gray-400 hover:text-red-500"
+                                                                        title="Delete Task"
+                                                                    >
+                                                                        <Trash2 size={13} />
+                                                                    </button>
                                                                 </div>
-                                                            )}
-                                                            {task.createdAt && (
-                                                                <p className="text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 sm:mt-2 flex items-center gap-1.5">
-                                                                    <Clock size={12} />
-                                                                    {new Date(task.createdAt).toLocaleString('en-US', {
-                                                                        month: 'short', day: 'numeric',
-                                                                        hour: '2-digit', minute: '2-digit'
-                                                                    })}
-                                                                </p>
                                                             )}
                                                         </div>
                                                     </div>
 
-                                                    {/* Mobile Separator */}
-                                                    <div className="sm:hidden h-px bg-gray-100 dark:bg-gray-700/30 w-full mb-0.5" />
+                                                    {/* Total Hours Stat Card (optional indicator) */}
+                                                    {/* Mobile Separator - Only show if PDF exists */}
+                                                    {task.pdfUrl && (
+                                                        <div className="sm:hidden h-px bg-gray-100 dark:bg-gray-700/30 w-full mb-0.5" />
+                                                    )}
 
                                                     {/* Action Buttons — bottom on mobile, right on desktop */}
-                                                    <div className="flex items-center gap-2 justify-end sm:shrink-0">
+                                                    <div className={`${!task.pdfUrl ? 'hidden sm:flex' : 'flex'} items-center gap-2 justify-end sm:shrink-0`}>
                                                         {task.pdfUrl && (
-                                                            <div className="flex items-center gap-3 text-red-600 dark:text-red-400 text-[13px] font-bold">
+                                                            <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 text-[10px] sm:text-[13px] font-black relative z-10">
                                                                 <a
                                                                     href={`${BASE_URL}${task.pdfUrl}`}
                                                                     target="_blank" rel="noreferrer"
+                                                                    onClick={(e) => e.stopPropagation()}
                                                                     className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                                     title="Open File"
                                                                 >
-                                                                    <FileText size={16} /> Open
+                                                                     <FileText size={12} className="sm:w-[14px] sm:h-[14px] shrink-0" /> Open
                                                                 </a>
                                                                 <button
+                                                                    type="button"
                                                                     onClick={(e) => {
                                                                         e.preventDefault();
-                                                                        handleDownloadFile(task.pdfUrl);
+                                                                        e.stopPropagation();
+                                                                        handleDownloadFile(task.pdfUrl, task.fileName);
                                                                     }}
                                                                     className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                                     title="Download File"
                                                                 >
-                                                                    <Download size={16} /> Download
+                                                                     <Download size={12} className="sm:w-[14px] sm:h-[14px] shrink-0" /> Download
                                                                 </button>
                                                             </div>
                                                         )}
 
                                                         <button
                                                             onClick={() => openEditModal(task)}
-                                                            className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                                            className={`${!task.pdfUrl ? 'hidden sm:block' : ''} p-1 text-gray-400 hover:text-blue-500 transition-colors`}
                                                             title="Edit Task"
                                                         >
-                                                            <Pencil size={18} />
+                                                            <Pencil className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px]" />
                                                         </button>
 
                                                         <button
                                                             onClick={() => setDeletingTaskId(task._id)}
-                                                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                            className={`${!task.pdfUrl ? 'hidden sm:block' : ''} p-1 text-gray-400 hover:text-red-500 transition-colors`}
                                                             title="Delete Task"
                                                         >
-                                                            <Trash2 size={18} />
+                                                            <Trash2 className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px]" />
                                                         </button>
                                                     </div>
                                                 </div>

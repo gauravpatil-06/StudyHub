@@ -305,51 +305,28 @@ export const Analytics = () => {
             const q = `?days=all&localDate=${localDate}`;
 
             try {
-                const s = await api.get(`/analytics/summary${q}`);
-                setSummary(s.data);
-            } catch (e) {
-                console.error('Failed to fetch summary:', e);
-            }
-
-            try {
-                const w = await api.get(`/analytics/weekly${q}`);
-                setWeekly(w.data);
-            } catch (e) {
-                console.error('Failed to fetch weekly:', e);
-            }
-
-            try {
-                const r = await api.get(`/analytics/recent${q}`);
-                setRecent(r.data);
-            } catch (e) {
-                console.error('Failed to fetch recent:', e);
-            }
-
-            try {
-                const act = await api.get('/analytics/activity');
-                setActivityStats(act.data);
-            } catch (e) {
-                console.error('Failed to fetch activity stats:', e);
-            }
-
-            try {
-                const yr = await api.get('/analytics/yearly');
-                setYearlyStats(yr.data);
-            } catch (e) {
-                console.error('Failed to fetch yearly stats:', e);
-            }
-
-            try {
-                const [tRes, mRes, aRes] = await Promise.all([
+                const results = await Promise.allSettled([
+                    api.get(`/analytics/summary${q}`),
+                    api.get(`/analytics/weekly${q}`),
+                    api.get(`/analytics/recent${q}`),
+                    api.get('/analytics/activity'),
+                    api.get('/analytics/yearly'),
                     api.get(`/tasks/${user._id}`),
                     api.get('/materials'),
                     api.get('/activity')
                 ]);
-                setAllTasks(tRes.data || []);
-                setAllMaterials(mRes.data || []);
-                setAllActivities(aRes.data || []);
+
+                if (results[0].status === 'fulfilled') setSummary(results[0].value.data);
+                if (results[1].status === 'fulfilled') setWeekly(results[1].value.data);
+                if (results[2].status === 'fulfilled') setRecent(results[2].value.data);
+                if (results[3].status === 'fulfilled') setActivityStats(results[3].value.data);
+                if (results[4].status === 'fulfilled') setYearlyStats(results[4].value.data);
+                if (results[5].status === 'fulfilled') setAllTasks(results[5].value.data || []);
+                if (results[6].status === 'fulfilled') setAllMaterials(results[6].value.data || []);
+                if (results[7].status === 'fulfilled') setAllActivities(results[7].value.data || []);
+
             } catch (e) {
-                console.error('Failed to fetch raw data for distribution:', e);
+                console.error('Failed to fetch analytics data:', e);
             }
         } catch (e) {
             console.error('Analytics macro fetch error:', e);
@@ -844,7 +821,7 @@ export const Analytics = () => {
     };
 
     return (
-        <div className="space-y-3 pb-24 max-w-[1400px] mx-auto">
+        <div className="space-y-3 pb-10 max-w-full px-0">
 
             {/* ── Header ── */}
             <PageHeader
@@ -879,13 +856,12 @@ export const Analytics = () => {
                         }}
                         className="flex flex-col gap-3 mb-0"
                     >
-                        {/* Primary Filter Row: Search + Secondary Filters */}
                         <motion.div
                             variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
-                            className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4"
+                            className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4"
                         >
                             {/* Search */}
-                            <div className="relative flex-1 group">
+                            <div className="relative flex-1 group min-w-0">
                                 <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${refreshing ? 'text-[#47C4B7] animate-pulse' : 'text-gray-400'}`} size={16} />
                                 <input
                                     type="text"
@@ -895,9 +871,9 @@ export const Analytics = () => {
                                     className="w-full pl-11 pr-4 py-2 sm:py-2.5 bg-transparent border border-gray-200 dark:border-gray-700/50 rounded-xl focus:ring-1 focus:ring-[#47C4B7]/30 focus:border-[#47C4B7] text-[15px] text-gray-900 dark:text-white outline-none transition-all placeholder-gray-400 shadow-sm"
                                 />
                             </div>
-
+ 
                             {/* Secondary Filters Container - 3 Separate Distinct Boxes */}
-                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-hidden">
+                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                 {/* Box 1: From Date */}
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
                                     <input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
@@ -922,7 +898,7 @@ export const Analytics = () => {
                         {/* Row: Time Pills */}
                         <motion.div
                             variants={{ hidden: { opacity: 0, y: 5 }, visible: { opacity: 1, y: 0 } }}
-                            className="flex items-center gap-2 flex-wrap"
+                            className="flex items-center gap-2 flex-nowrap overflow-x-auto custom-scrollbar pb-2 md:pb-0"
                         >
                             {filterOpts.map(pill => (
                                 <button
@@ -945,8 +921,10 @@ export const Analytics = () => {
                 </HoverCard>
             </div>
 
-            {/* Reduced Spacer for tighter fit */}
-            <div className="h-4 sm:h-6" />
+
+
+            {/* Fine-tuned spacer for exact balance */}
+            <div className="h-1 sm:h-3" />
 
             {/* ── Productivity Score Banner ── */}
             {!loading && (
@@ -1242,24 +1220,24 @@ export const Analytics = () => {
             {/* ── Activity Heatmap ── */}
             < HoverCard
                 rKey={`heatmap-${refreshKey}`}
-                delay={0.45}
+                delay={0.1}
                 className="glass-card bg-white dark:bg-gray-900/40 border-2 border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-xl"
             >
 
                 {/* Header */}
-                <div className="flex items-center gap-2.5 mb-6">
-                    <div className="p-2 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-500 shrink-0">
+                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 mb-3 sm:mb-6">
+                    <div className="p-2 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-500 shrink-0 mt-1 sm:mt-0">
                         <Flame size={18} strokeWidth={2.5} />
                     </div>
-                    <div className="flex-1">
-                        <div className="flex flex-row items-center justify-between gap-3">
-                            <div>
-                                <h2 className="text-[1.05rem] font-bold text-gray-900 dark:text-white tracking-tight">Activity Heatmap</h2>
-                                <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-3 items-start">
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-[16px] sm:text-[1.05rem] font-bold text-gray-900 dark:text-white tracking-tight leading-tight">Activity Heatmap</h2>
+                                <p className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 leading-snug mt-0.5 truncate sm:whitespace-normal">
                                     {yearHeatmap.weeks?.flat().filter(d => d.inYear && d.hours > 0).length || 0} active days in {heatmapYear} &mdash; darker = more study time
                                 </p>
                             </div>
-                            <div className="flex items-center gap-1 bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-2xl shrink-0">
+                            <div className="flex items-center gap-1 bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-2xl shrink-0 self-end sm:self-center sm:mt-0">
                                 {availableYears.map(y => (
                                     <button key={y} onClick={() => setHeatmapYear(y)}
                                         className={`text-[10px] font-black px-2.5 py-1 rounded-xl transition-all ${y === heatmapYear
@@ -1360,7 +1338,7 @@ export const Analytics = () => {
             {/* ── Weekly Performance Table ── */}
             <HoverCard
                 rKey={`perf-table-${refreshKey}`}
-                delay={0.5}
+                delay={0.15}
                 className="glass-card bg-white dark:bg-gray-900/40 border-2 border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-xl"
             >
                 <div className="flex items-center gap-2.5 mb-6">

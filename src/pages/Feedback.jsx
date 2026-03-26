@@ -205,7 +205,7 @@ export const Feedback = () => {
     };
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="space-y-6 pb-10 max-w-full px-0">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}

@@ -34,10 +34,10 @@ export const TaskProvider = ({ children }) => {
         }
     }, [isSessionValid, fetchTasks]);
 
-    const addTask = async (title, description = '', pdfUrl = '') => {
+    const addTask = async (title, description = '', pdfUrl = '', fileName = '') => {
         if (!user) return;
         try {
-            const { data } = await api.post('/tasks', { title, description, pdfUrl });
+            const { data } = await api.post('/tasks', { title, description, pdfUrl, fileName });
             setTasks(prev => [data, ...prev]); // Add to top
         } catch (error) {
             console.error('Error adding task:', error);
@@ -48,6 +48,7 @@ export const TaskProvider = ({ children }) => {
     const updateTask = async (id, updates) => {
         if (!user) return;
         try {
+            // updates could contain fileName
             const { data } = await api.put(`/tasks/${id}`, updates);
             setTasks(prev => prev.map(t => t._id === id ? data : t));
         } catch (error) {

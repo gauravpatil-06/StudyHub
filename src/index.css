@@ -1,3 +1,6 @@
+/* 🔥 IMPORT FONT (MUST) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,22 +16,29 @@
     --text-secondary: #475569;
     --text-tertiary: #94a3b8;
     --border-color: #e2e8f0;
+
     --success-color: #10b981;
     --success-bg: rgba(16, 185, 129, 0.1);
     --warning-color: #f59e0b;
     --error-color: #ef4444;
+
+    --analytics-1: #6366f1;
+    --analytics-2: #f43f5e;
+    --analytics-3: #8b5cf6;
+
     --radius-sm: 12px;
     --radius-md: 18px;
     --radius-lg: 24px;
+
     --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
     --bg-primary: #020617;
     --bg-secondary: #0a1a19;
-    /* matching study theme */
     --bg-tertiary: #0f2423;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
@@ -36,8 +46,11 @@
     --border-color: #1e293b;
   }
 
+  /* 🔥 GLOBAL FONT APPLY (MAIN FIX) */
   body {
-    @apply antialiased text-gray-900 bg-[#f8fafc] transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+
+    @apply antialiased bg-[#f8fafc] transition-colors duration-300;
     background-color: var(--bg-primary);
     color: var(--text-primary);
   }
@@ -46,9 +59,28 @@
     @apply text-gray-100;
     background-color: var(--bg-primary);
   }
+
+  /* 🔥 TYPOGRAPHY SYSTEM */
+  h1 {
+    @apply text-4xl font-semibold tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+
+  h3 {
+    @apply text-xl font-medium;
+  }
+
+  p {
+    @apply text-base font-normal text-gray-600;
+  }
 }
 
 @layer utilities {
+
+  /* 🔥 GLASS EFFECT */
   .glass {
     @apply backdrop-blur-md border shadow-xl;
     background-color: rgba(255, 255, 255, 0.7);
@@ -60,12 +92,26 @@
     border-color: rgba(255, 255, 255, 0.1);
   }
 
+  /* 🔥 LOGO TEXT */
   .logo-text {
     @apply font-bold tracking-tight;
     color: var(--brand-primary);
   }
 
-  /* ── Custom Scrollbar ── */
+  /* 🔥 ANALYTICS COLORS */
+  .analytics-indigo {
+    color: var(--analytics-1);
+  }
+
+  .analytics-rose {
+    color: var(--analytics-2);
+  }
+
+  .analytics-purple {
+    color: var(--analytics-3);
+  }
+
+  /* 🔥 CUSTOM SCROLLBAR */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(71, 196, 183, 0.4) transparent;
@@ -73,7 +119,7 @@
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
-    height: 6px; /* For horizontal scroll/slider */
+    height: 6px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -89,13 +135,12 @@
     background: rgba(71, 196, 183, 0.6);
   }
 
-  /* Desktop specific hover effect */
   @media (min-width: 769px) {
     .custom-scrollbar {
       scrollbar-color: transparent transparent;
       transition: scrollbar-color 0.3s;
     }
-    
+
     .custom-scrollbar:hover {
       scrollbar-color: rgba(71, 196, 183, 0.4) transparent;
     }
@@ -105,6 +150,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }

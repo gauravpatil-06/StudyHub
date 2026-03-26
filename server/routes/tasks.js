@@ -22,13 +22,14 @@ router.get('/:userId', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
     try {
-        const { title, description, pdfUrl } = req.body;
+        const { title, description, pdfUrl, fileName } = req.body;
 
         const task = new Task({
             userId: req.user._id,
             title,
             description,
             pdfUrl,
+            fileName: fileName || '',
             status: 'pending'
         });
 
@@ -62,6 +63,10 @@ router.put('/:id', protect, async (req, res) => {
 
         if (req.body.pdfUrl !== undefined) {
             task.pdfUrl = req.body.pdfUrl;
+        }
+
+        if (req.body.fileName !== undefined) {
+            task.fileName = req.body.fileName;
         }
 
         if (req.body.status) {

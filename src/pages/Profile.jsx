@@ -361,7 +361,7 @@ export const Profile = () => {
     if (isLoading) return null;
 
     return (
-        <div className="pb-20 max-w-[1400px] mx-auto space-y-6 px-4 sm:px-6">
+        <div className="pb-10 max-w-full space-y-6 px-1 sm:px-0">
             <motion.div
                 key={refreshKey}
                 initial={{ opacity: 0, y: -20, scale: 0.97 }}
@@ -394,7 +394,10 @@ export const Profile = () => {
                 delay={0.1}
                 className="bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-xl border-2 border-gray-100 dark:border-gray-800 relative"
             >
-                <div className="h-28 sm:h-48 md:h-64 relative group bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700">
+                <div
+                    className="relative group bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700"
+                    style={{ aspectRatio: '4/1', maxHeight: '220px', width: '100%' }}
+                >
                     {formData.coverImage ? (
                         <img src={formData.coverImage} alt="Cover" className="w-full h-full object-cover" />
                     ) : (
@@ -424,12 +427,15 @@ export const Profile = () => {
                 </div>
 
                 {/* ---------- PROFILE CONTENT SECTION ---------- */}
-                <div className="px-4 sm:px-6 pb-8 relative">
+                <div className="px-3 sm:px-6 pb-6 sm:pb-8 relative">
 
-                    {/* Avatar overlapping border */}
-                    <div className="absolute -top-20 sm:-top-24 md:-top-32 left-6 z-10 group">
+                    <div
+                        className="absolute left-4 sm:left-6 z-10 group"
+                        style={{ top: 'calc(-1 * clamp(40px, 12vw, 100px))' }}
+                    >
                         <div
-                            className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 rounded-full border-[4px] md:border-[6px] border-white dark:border-gray-900 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center shadow-md relative cursor-pointer"
+                            className="rounded-full border-[3px] sm:border-[4px] md:border-[5px] border-white dark:border-gray-900 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center shadow-md relative cursor-pointer"
+                            style={{ width: 'clamp(72px, 22vw, 180px)', height: 'clamp(72px, 22vw, 180px)' }}
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {formData.avatar ? (
@@ -461,7 +467,7 @@ export const Profile = () => {
                         />
                     </div>
 
-                    <div className="flex justify-end pt-2 pb-0 items-start">
+                    <div className="flex justify-end pt-1 pb-0 items-start">
                         <button
                             onClick={() => setIsEditing(true)}
                             className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition"
@@ -470,7 +476,10 @@ export const Profile = () => {
                         </button>
                     </div>
 
-                    <div className="mt-4 flex flex-col md:flex-row gap-6">
+                    <div
+                        className="flex flex-col md:flex-row gap-4 sm:gap-6"
+                        style={{ marginTop: 'calc(clamp(40px, 12vw, 100px) - 36px)' }}
+                    >
                         {/* Left Side: Name and Headline */}
                         <div className="flex-grow space-y-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -1193,14 +1202,14 @@ export const Profile = () => {
                                 initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
                                 className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col"
                             >
-                                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <div className="px-3 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                     <h2 className="text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Add skill</h2>
                                     <button onClick={() => setIsAddingSkill(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
                                         <X size={24} className="text-gray-500" />
                                     </button>
                                 </div>
 
-                                <div className="p-6 space-y-6">
+                                <div className="px-3 sm:px-6 py-4 space-y-6">
                                     <p className="text-[15px] text-gray-500">* Indicates required</p>
 
                                     <div className="space-y-1.5">
@@ -1217,12 +1226,12 @@ export const Profile = () => {
 
                                     <div className="p-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl border border-gray-100 dark:border-gray-800">
                                         <div className="flex flex-wrap gap-2">
-                                            {['Java', 'Python', 'SQL', 'Redux.js', 'Git', 'GraphQL', 'Node.js', 'React Native', 'Spring Framework', 'Webpack'].map((skill) => (
+                                            {['Java', 'Python', 'SQL', 'Redux.js', 'Git', 'GraphQL', 'Node.js', 'React Native', 'Spring Framework', 'Webpack', 'TypeScript', 'Android'].map((skill) => (
                                                 <button
                                                     key={skill}
                                                     type="button"
                                                     onClick={() => setNewSkill(skill)}
-                                                    className="px-4 py-1.5 border border-gray-400 dark:border-gray-600 rounded-full text-[15px] font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                                    className="px-2.5 py-1 sm:px-4 sm:py-1.5 border border-gray-400 dark:border-gray-600 rounded-full text-[11px] sm:text-[13px] font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                                 >
                                                     {skill}
                                                 </button>
@@ -1231,7 +1240,7 @@ export const Profile = () => {
                                     </div>
                                 </div>
 
-                                <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                                <div className="px-3 sm:px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
                                     <button
                                         onClick={() => handleAddSkill(newSkill)}
                                         disabled={!newSkill.trim() || isSaving}

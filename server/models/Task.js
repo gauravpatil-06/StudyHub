@@ -18,6 +18,10 @@ const TaskSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    fileName: {
+        type: String,
+        default: '',
+    },
     status: {
         type: String,
         enum: ['pending', 'completed'],

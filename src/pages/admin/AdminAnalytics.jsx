@@ -476,7 +476,7 @@ export const AdminAnalytics = () => {
     const hasAnyGrowth = hasTasks || hasStudy || hasMaterials || hasUsers || hasFeedback;
 
     return (
-        <div className="space-y-3 pb-24 max-w-[1400px] mx-auto">
+        <div className="space-y-3 pb-10 max-w-full mx-auto px-0">
             <PageHeader
                 icon={LayoutGrid}
                 title="Platform Analytics"
@@ -512,9 +512,9 @@ export const AdminAnalytics = () => {
                     >
                         <motion.div
                             variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
-                            className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4"
+                            className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4"
                         >
-                            <div className="relative flex-1 group">
+                            <div className="relative flex-1 group min-w-0">
                                 <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isRefreshing ? 'text-[#47C4B7] animate-pulse' : 'text-gray-400'}`} size={16} />
                                 <input
                                     type="text"
@@ -525,7 +525,7 @@ export const AdminAnalytics = () => {
                                 />
                             </div>
 
-                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-hidden">
+                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
                                     <input type="date" value={filters.from} onChange={(e) => setFilters(prev => ({ ...prev, from: e.target.value }))} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
                                 </div>
@@ -544,7 +544,7 @@ export const AdminAnalytics = () => {
 
                         <motion.div
                             variants={{ hidden: { opacity: 0, y: 5 }, visible: { opacity: 1, y: 0 } }}
-                            className="flex items-center gap-2 flex-wrap"
+                            className="flex items-center gap-2 flex-nowrap overflow-x-auto custom-scrollbar pb-2 md:pb-0"
                         >
                             {filterOpts.map(pill => (
                                 <button
@@ -563,7 +563,8 @@ export const AdminAnalytics = () => {
                 </HoverCard>
             </div>
 
-            <div className="h-4 sm:h-6" />
+            {/* Fine-tuned spacer for exact balance */}
+            <div className="h-1 sm:h-3" />
 
             {/* ── Productivity Score Banner ── */}
             {!loading && (

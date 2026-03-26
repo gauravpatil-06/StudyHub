@@ -326,7 +326,7 @@ export const History = () => {
     const hasPeriodicData = useMemo(() => derivedPeriodStats.some(d => (d.hours || 0) > 0 || (d.completedTasks || 0) > 0 || (d.totalTasks || 0) > 0), [derivedPeriodStats]);
 
     return (
-        <div className="space-y-3 pb-24 max-w-[1400px] mx-auto">
+        <div className="space-y-3 pb-10 max-w-full px-0">
 
 
 
@@ -384,7 +384,7 @@ export const History = () => {
                             </div>
 
                             {/* Secondary Filters Container - 3 Separate Distinct Boxes */}
-                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-hidden">
+                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-x-auto custom-scrollbar pb-2 lg:pb-0">
                                 {/* Box 1: From Date */}
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
                                     <input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value, timeFilter: 'custom' })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
@@ -409,7 +409,7 @@ export const History = () => {
                         {/* Row: Time Pills */}
                         <motion.div
                             variants={{ hidden: { opacity: 0, y: 5 }, visible: { opacity: 1, y: 0 } }}
-                            className="flex items-center gap-2 flex-wrap"
+                            className="flex items-center gap-2 flex-nowrap overflow-x-auto custom-scrollbar pb-2 lg:pb-0"
                         >
                             {[
                                 { id: '7d', label: 'Last 7 Days' },
@@ -434,8 +434,8 @@ export const History = () => {
                 </HoverCard>
             </div>
 
-            {/* Reduced Spacer for tighter fit (Match Analytics) */}
-            <div className="h-4 sm:h-6" />
+            {/* Fine-tuned spacer for exact balance (Match Analytics) */}
+            <div className="h-1 sm:h-3" />
 
             {/* ── Analytics Insights Section ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

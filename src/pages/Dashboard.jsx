@@ -9,10 +9,10 @@ import {
 import { useTasks } from '../context/TaskContext';
 import { useAuth } from '../context/AuthContext';
 import { useMaterials } from '../context/MaterialContext';
+import { useActivities } from '../context/ActivityContext';
 import api, { BASE_URL } from '../utils/api';
 import toast from 'react-hot-toast';
 import { PageLoader } from '../components/ui/PageLoader';
-import { PageHeader } from '../components/ui/PageHeader';
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -112,7 +112,7 @@ const StatCard = ({ label, value, icon: Icon, colorClass, delay, rKey, borderCol
         <HoverCard
             rKey={rKey}
             delay={delay}
-            className={`glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-center shadow-xl min-h-[90px] ${borderColorClass || ''}`}
+            className={`glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 flex flex-col justify-center shadow-xl h-full min-h-[70px] ${borderColorClass || ''}`}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
@@ -120,8 +120,8 @@ const StatCard = ({ label, value, icon: Icon, colorClass, delay, rKey, borderCol
                         <Icon size={18} className={`${colorClass} shrink-0`} strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">{label}</p>
-                        <h3 className="text-[13px] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
+                        <p className="text-[clamp(10px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">{label}</p>
+                        <h3 className="text-[clamp(9px,1.1vw,13px)] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
                             {value}
                         </h3>
                     </div>
@@ -131,7 +131,7 @@ const StatCard = ({ label, value, icon: Icon, colorClass, delay, rKey, borderCol
     );
 
     return path ? (
-        <Link to={path} className="block no-underline">
+        <Link to={path} className="block no-underline h-full">
             {content}
         </Link>
     ) : content;
@@ -141,6 +141,13 @@ export const Dashboard = () => {
     const { user, addStudyHours, fetchMe } = useAuth();
     const { tasks, isLoading, addTask, deleteTask, toggleTaskStatus, updateTask, fetchTasks } = useTasks();
     const { materials } = useMaterials();
+    const {
+        fetchActivities,
+        todayActivities, setTodayActivities,
+        monthlySummary, setMonthlySummary,
+        goals, setGoals,
+        totalActivityCount, setTotalActivityCount,
+    } = useActivities();
 
     // UI States
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -185,13 +192,21 @@ export const Dashboard = () => {
     const [actType, setActType] = useState('Study');
     const [actTopic, setActTopic] = useState('');
     const [actSaving, setActSaving] = useState(false);
-    const [todayActivities, setTodayActivities] = useState([]);
 
     // ── Goals States ──
-    const [goals, setGoals] = useState({ codingGoalHrs: 100, watchingGoalHrs: 50, studyGoalHrs: 100 });
-    const [monthlySummary, setMonthlySummary] = useState({ studyHrs: 0, codingHrs: 0, watchingHrs: 0, totalStudyHrs: 0, totalCodingHrs: 0, totalWatchingHrs: 0 });
     const [editGoals, setEditGoals] = useState(false);
     const [goalForm, setGoalForm] = useState({ codingGoalHrs: 100, watchingGoalHrs: 50, studyGoalHrs: 100 });
+
+    // Sync goalForm when goals load from context
+    useEffect(() => {
+        if (goals) {
+            setGoalForm({
+                codingGoalHrs: goals.codingGoalHrs || 100,
+                watchingGoalHrs: goals.watchingGoalHrs || 50,
+                studyGoalHrs: goals.studyGoalHrs || 100,
+            });
+        }
+    }, [goals]);
 
     // Initial Quote selection
     const quote = useMemo(() => {
@@ -199,19 +214,21 @@ export const Dashboard = () => {
         return MOTIVATIONAL_QUOTES[(day - 1) % MOTIVATIONAL_QUOTES.length];
     }, []);
 
-    // ── Fetch today's activities + goals + monthly summary ──
+    // ── Fetch today's activities (only on explicit refresh, not on mount) ──
     const fetchActivityData = async (refresh = false) => {
         try {
             if (refresh) setIsRefreshing(true);
             const localDate = getLocalDateStr();
-            const [todayRes, summaryRes, goalsRes] = await Promise.all([
+            const [todayRes, summaryRes, goalsRes, allRes] = await Promise.all([
                 api.get(`/activity/today?localDate=${localDate}`),
                 api.get(`/activity/monthly-summary?localDate=${localDate}`),
-                api.get('/goals')
+                api.get('/goals'),
+                api.get('/activity')
             ]);
             setTodayActivities(todayRes.data);
             setMonthlySummary(summaryRes.data);
             setGoals(goalsRes.data);
+            setTotalActivityCount(allRes.data.length);
             setGoalForm({
                 codingGoalHrs: goalsRes.data.codingGoalHrs,
                 watchingGoalHrs: goalsRes.data.watchingGoalHrs,
@@ -236,7 +253,8 @@ export const Dashboard = () => {
         return `${minutes} m`;
     };
 
-    useEffect(() => { fetchActivityData(); }, [user?._id]);
+    // No mount fetch — data comes from ActivityContext pre-cached at login
+
     const handleLogActivity = async (e) => {
         e.preventDefault();
         if (!actMinutes || Number(actMinutes) < 1) return toast.error('Enter valid minutes');
@@ -253,7 +271,8 @@ export const Dashboard = () => {
             setActTopic('');
             await Promise.all([
                 fetchActivityData(),
-                fetchMe()
+                fetchMe(),
+                fetchActivities()
             ]);
         } catch (err) {
             toast.error('Failed to log activity');
@@ -403,7 +422,7 @@ export const Dashboard = () => {
         } else {
             const hoursAdded = +(swElapsed / 3600).toFixed(4);
             await toast.promise(
-                addStudyHours(hoursAdded, 'Stopwatch').then(() => fetchActivityData()),
+                addStudyHours(hoursAdded, 'Stopwatch').then(() => Promise.all([fetchActivityData(), fetchActivities()])),
                 {
                     loading: 'Saving stopwatch session...',
                     success: `Great! Logged ${(hoursAdded * 60).toFixed(0)} min 🔥`,
@@ -493,7 +512,7 @@ export const Dashboard = () => {
             const hoursAdded = +(elapsedSeconds / 3600).toFixed(2);
             if (hoursAdded > 0) {
                 toast.promise(
-                    addStudyHours(hoursAdded, 'Countdown').then(() => fetchActivityData()),
+                    addStudyHours(hoursAdded, 'Countdown').then(() => Promise.all([fetchActivityData(), fetchActivities()])),
                     {
                         loading: 'Saving partial session...',
                         success: `Excellent! Logged ${hoursAdded} hrs🔥`,
@@ -604,7 +623,7 @@ export const Dashboard = () => {
         setIsAddModalOpen(true);
     };
 
-    const handleDownloadFile = async (fileUrl) => {
+    const handleDownloadFile = async (fileUrl, originalName) => {
         try {
             const loadingToast = toast.loading('Downloading file...');
             const url = `${BASE_URL}${fileUrl}`; // Point directly to the backend
@@ -617,9 +636,9 @@ export const Dashboard = () => {
             const link = document.createElement('a');
             link.href = downloadUrl;
 
-            // Re-construct the exact original filename
-            const fileName = fileUrl.split('/').pop() || 'document.pdf';
-            link.download = decodeURIComponent(fileName);
+            const safeOriginalName = originalName || fileUrl.split('/').pop() || 'document.pdf';
+            const cleanFileName = decodeURIComponent(safeOriginalName).replace(/-\d{13}-\d+(?=\.[^.]+$)/, '').replace(/-/g, ' ');
+            link.download = cleanFileName;
 
             document.body.appendChild(link);
             link.click();
@@ -639,7 +658,8 @@ export const Dashboard = () => {
             await Promise.all([
                 fetchMe(),
                 fetchTasks(),
-                fetchActivityData(true)
+                fetchActivityData(true),
+                fetchActivities()
             ]);
             setRefreshKey(prev => prev + 1);
         } catch (err) {
@@ -650,16 +670,15 @@ export const Dashboard = () => {
     // Ensure we don't show a blank/broken dash if user isn't here yet
     if (!user) return <PageLoader />;
 
-    // PageLoader handled by AppLayout transition
-    if (isLoading && tasks.length === 0) return null;
+    // No blank return on loading — render immediately with available data
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="space-y-6 pb-10 max-w-full px-0">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 className="flex flex-col gap-1.5 bg-transparent mb-6 w-full"
             >
                 <div className="flex items-center justify-between gap-2 w-full min-w-0">
@@ -682,12 +701,12 @@ export const Dashboard = () => {
             </motion.div>
 
             {/* Top Stat Cards Grid - 5 columns on laptop, 2 columns on mobile */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3">
                 {/* 1. Day Streak */}
                 <HoverCard
                     rKey={`streak-${refreshKey}`}
                     delay={0.05}
-                    className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-center shadow-xl relative overflow-hidden group min-h-[90px]"
+                    className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 flex flex-col justify-center shadow-xl relative overflow-hidden group h-full min-h-[70px]"
                     extraHover={{ borderColor: 'rgba(249, 115, 22, 0.6)', boxShadow: '0 20px 40px -8px rgba(249, 115, 22, 0.22)' }}
                 >
                     <div className="absolute -right-2 -top-2 opacity-5 blur-lg w-16 h-16 bg-orange-500 rounded-full" />
@@ -697,8 +716,8 @@ export const Dashboard = () => {
                                 <Flame size={18} className="text-orange-500 shrink-0" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">Day Streak</p>
-                                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-100 leading-none truncate">
+                                <p className="text-[clamp(11px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">Day streak</p>
+                                <h3 className="text-[clamp(10px,1.1vw,13px)] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
                                     {user?.streak || 0}
                                 </h3>
                             </div>
@@ -713,24 +732,24 @@ export const Dashboard = () => {
                 <StatCard rKey={`coding-${refreshKey}`} delay={0.15} label="Coding" value={formatDisplayTime(monthlySummary?.totalCodingHrs || 0)} icon={Code2} colorClass="text-indigo-500" path="/total-study-hours" />
                 <StatCard rKey={`watch-${refreshKey}`} delay={0.2} label="Watching" value={formatDisplayTime(monthlySummary?.totalWatchingHrs || 0)} icon={Target} colorClass="text-rose-500" path="/total-study-hours" />
 
-                <Link to="/all-tasks" className="block no-underline">
+                <Link to="/all-tasks" className="block no-underline h-full">
                     <HoverCard
                         rKey={`progress-${refreshKey}`}
                         delay={0.25}
-                        className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-between shadow-xl min-h-[90px]"
+                        className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 flex flex-col justify-center shadow-xl h-full min-h-[70px]"
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="p-2 rounded-full bg-[#47C4B7]/10 flex items-center justify-center">
                                     <CheckCircle2 size={18} className="text-[#47C4B7] shrink-0" strokeWidth={2.5} />
                                 </div>
-                                <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight">Completion</p>
+                                <p className="text-[clamp(11px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight">Completion</p>
                             </div>
-                            <h3 className="text-lg font-semibold text-[#47C4B7] leading-none tracking-tight">
+                            <h3 className="text-[clamp(10px,1.1vw,13px)] font-black text-[#47C4B7] leading-none tracking-tight">
                                 {metrics.completionRate}%
                             </h3>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-3">
+                        <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-1.5 md:mt-2 lg:mt-3">
                             <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${metrics.completionRate}%` }}
@@ -745,12 +764,12 @@ export const Dashboard = () => {
                 <StatCard rKey={`all-tasks-${refreshKey}`} delay={0.3} label="All Tasks" value={metrics.total} icon={FileText} colorClass="text-blue-500" path="/all-tasks" />
                 <StatCard rKey={`done-tasks-${refreshKey}`} delay={0.35} label="Completed" value={metrics.completed} icon={CheckCircle} colorClass="text-emerald-500" path="/all-tasks" />
                 <StatCard rKey={`pending-tasks-${refreshKey}`} delay={0.4} label="Pending" value={metrics.total - metrics.completed} icon={XCircle} colorClass="text-rose-500" path="/all-tasks" />
-                <StatCard rKey={`activity-${refreshKey}`} delay={0.45} label="Activity Log" value={todayActivities.length} icon={History} colorClass="text-amber-500" path="/activity-log" />
+                <StatCard rKey={`activity-${refreshKey}`} delay={0.45} label="Activity Log" value={totalActivityCount} icon={History} colorClass="text-amber-500" path="/activity-log" />
                 <StatCard rKey={`materials-${refreshKey}`} delay={0.5} label="Study Materials" value={materials.length} icon={BookMarked} colorClass="text-teal-500" path="/study-materials" />
             </div>
 
             {/* Middle Grid: Weekly Calendar & Focus Timer */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
 
                 {/* Focus Timer */}
                 <HoverCard
@@ -763,7 +782,7 @@ export const Dashboard = () => {
                     {/* Header + Mode Toggle */}
                     <div className="w-full flex items-center gap-3 mb-5 z-[2] relative">
                         <Clock size={16} className="text-[#47C4B7]" />
-                        <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Focus Session</h2>
+                        <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Focus Session</h2>
                         <div className="flex-1 h-[1px] bg-gray-100 dark:bg-gray-800 ml-1" />
                     </div>
                     {/* Header + Mode Toggle */}
@@ -772,7 +791,7 @@ export const Dashboard = () => {
                         <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
                             <button
                                 onClick={() => { setFocusMode('countdown'); setSwRunning(false); }}
-                                className={`flex items-center gap-1.5 px-3 py-1 text-[13px] font-bold rounded-lg transition-all ${focusMode === 'countdown'
+                                className={`flex items-center gap-1.5 px-3 py-1 text-[11px] sm:text-[13px] font-bold rounded-lg transition-all ${focusMode === 'countdown'
                                     ? 'bg-[#47C4B7] text-white shadow'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
@@ -781,7 +800,7 @@ export const Dashboard = () => {
                             </button>
                             <button
                                 onClick={() => { setFocusMode('stopwatch'); setIsTimerRunning(false); }}
-                                className={`flex items-center gap-1.5 px-3 py-1 text-[13px] font-bold rounded-lg transition-all ${focusMode === 'stopwatch'
+                                className={`flex items-center gap-1.5 px-3 py-1 text-[11px] sm:text-[13px] font-bold rounded-lg transition-all ${focusMode === 'stopwatch'
                                     ? 'bg-[#47C4B7] text-white shadow'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
@@ -794,7 +813,7 @@ export const Dashboard = () => {
                     {focusMode === 'countdown' ? (
                         <>
                             <div
-                                className="text-2xl sm:text-3xl font-black tracking-tight mb-6 z-10 tabular-nums text-slate-900/60 dark:text-white/60"
+                                className="text-xl sm:text-3xl font-black tracking-tight mb-6 z-10 tabular-nums text-slate-900/60 dark:text-white/60"
                                 style={{ fontWeight: 900, letterSpacing: '-0.02em' }}
                             >
                                 {formatTime(timeLeft)}
@@ -804,7 +823,7 @@ export const Dashboard = () => {
                                 {['30m', '1h', '2h', '3h', 'custom'].map(m => (
                                     <button
                                         key={m} onClick={() => handleTimerModeChange(m)}
-                                        className={`px-3 py-1.5 text-[13px] font-bold rounded-lg transition-colors ${timerMode === m ? 'bg-[#47C4B7] text-white shadow' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 hover:bg-gray-300'}`}
+                                        className={`px-3 py-1.5 text-[11px] sm:text-[13px] font-bold rounded-lg transition-colors ${timerMode === m ? 'bg-[#47C4B7] text-white shadow' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 hover:bg-gray-300'}`}
                                     >
                                         {m}
                                     </button>
@@ -848,14 +867,14 @@ export const Dashboard = () => {
                             <div className="flex items-center justify-center gap-3 z-10 w-full px-2">
                                 <button
                                     onClick={() => setIsTimerRunning(!isTimerRunning)}
-                                    className={`flex justify-center items-center gap-2 px-4 py-2 text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 border hover:opacity-90 ${isTimerRunning ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-[#47C4B7]/10 text-[#47C4B7] border-[#47C4B7]/20'}`}
+                                    className={`flex justify-center items-center gap-2 px-4 py-2 text-[12px] sm:text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 border hover:opacity-90 ${isTimerRunning ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-[#47C4B7]/10 text-[#47C4B7] border-[#47C4B7]/20'}`}
                                 >
                                     {isTimerRunning ? <Pause size={16} /> : <Play size={16} />}
                                     {isTimerRunning ? 'Pause' : 'Start'}
                                 </button>
                                 <button
                                     onClick={handleStopAndSave}
-                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 flex items-center gap-2 border border-transparent"
+                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-[12px] sm:text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 flex items-center gap-2 border border-transparent"
                                     title="End Session & Save"
                                 >
                                     <RotateCcw size={16} />
@@ -868,7 +887,7 @@ export const Dashboard = () => {
                         <div className="flex flex-col items-center w-full z-10">
                             {/* Big elapsed time display */}
                             <div
-                                className="text-2xl sm:text-3xl font-black tracking-tight mb-3 tabular-nums opacity-60"
+                                className="text-xl sm:text-3xl font-black tracking-tight mb-3 tabular-nums opacity-60"
                                 style={{
                                     fontWeight: 900, letterSpacing: '-0.02em',
                                     color: swRunning ? '#47C4B7' : 'inherit'
@@ -884,7 +903,7 @@ export const Dashboard = () => {
                             <div className="flex items-center justify-center gap-3 w-full px-2">
                                 <button
                                     onClick={handleSwToggle}
-                                    className={`flex justify-center items-center gap-2 px-4 py-2 text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 border hover:opacity-90 ${swRunning
+                                    className={`flex justify-center items-center gap-2 px-4 py-2 text-[12px] sm:text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 border hover:opacity-90 ${swRunning
                                         ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
                                         : 'bg-[#47C4B7]/10 text-[#47C4B7] border-[#47C4B7]/20'
                                         }`}
@@ -895,7 +914,7 @@ export const Dashboard = () => {
                                 <button
                                     onClick={handleSwSaveEnd}
                                     disabled={swElapsed === 0}
-                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 flex items-center gap-2 border border-transparent disabled:opacity-40 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-[12px] sm:text-[15px] font-semibold rounded-xl shadow-xl transition-all active:scale-95 flex items-center gap-2 border border-transparent disabled:opacity-40 disabled:cursor-not-allowed"
                                     title="Save & End"
                                 >
                                     <RotateCcw size={16} />
@@ -920,7 +939,7 @@ export const Dashboard = () => {
                 >
                     <Link to="/activity-log" className="flex items-center gap-3 mb-6 z-[2] relative hover:opacity-80 transition-opacity no-underline w-fit group">
                         <Calendar size={16} className="text-[#47C4B7] group-hover:scale-110 transition-transform" />
-                        <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Activity This Week</h2>
+                        <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Activity This Week</h2>
                         <div className="flex-1 h-[1px] bg-gray-100 dark:bg-gray-800 ml-2 min-w-[30px]" />
                     </Link>
                     <div className="grid grid-cols-7 gap-2 sm:gap-4 flex-1 items-center z-10">
@@ -928,8 +947,8 @@ export const Dashboard = () => {
                             <div key={i} className={`flex flex-col items-center justify-center p-2 sm:py-4 rounded-2xl transition-all relative border ${d.isToday ? 'ring-2 ring-[#47C4B7] ring-offset-2 dark:ring-offset-gray-900 border-transparent shadow-xl' : ''
                                 } ${d.active ? 'bg-[#47C4B7] border-[#47C4B7] text-white shadow-[#47C4B7]/20 scale-105 shadow-md' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700/50 text-gray-500 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
                                 }`}>
-                                <span className="text-[10px] sm:text-[13px] font-bold mb-1 opacity-70 uppercase tracking-widest">{d.day}</span>
-                                <span className="text-base sm:text-xl font-black">{d.date}</span>
+                                <span className="text-[8px] sm:text-[13px] font-bold mb-1 opacity-70 uppercase tracking-widest">{d.day}</span>
+                                <span className="text-sm sm:text-xl font-black">{d.date}</span>
                                 {d.active && <div className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center shadow-xl">
                                     <div className="w-2 h-2 bg-[#47C4B7] rounded-full" />
                                 </div>}
@@ -940,7 +959,7 @@ export const Dashboard = () => {
             </div>
 
             {/* ── NEW ROW: Log Activity (left) + Monthly Goals (right) ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
 
                 {/* Log Activity Card */}
                 <HoverCard
@@ -950,7 +969,7 @@ export const Dashboard = () => {
                 >
                     <div className="flex items-center gap-3 mb-6 z-[2] relative">
                         <Zap size={16} className="text-[#47C4B7]" />
-                        <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Log Activity</h2>
+                        <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Log Activity</h2>
                         <div className="flex-1 h-[1px] bg-gray-100 dark:bg-gray-800 ml-2" />
                     </div>
 
@@ -963,7 +982,7 @@ export const Dashboard = () => {
                                 value={actDate}
                                 onChange={e => setActDate(e.target.value)}
                                 max={getLocalDateStr()}
-                                className="w-full px-3 py-2 bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-[15px] font-semibold text-gray-800 dark:text-white focus:ring-1 focus:ring-[#47C4B7]/30 focus:border-[#47C4B7] outline-none transition-all"
+                                className="w-full px-3 py-2 bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-[12px] sm:text-[15px] font-semibold text-gray-800 dark:text-white focus:ring-1 focus:ring-[#47C4B7]/30 focus:border-[#47C4B7] outline-none transition-all"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -1003,7 +1022,7 @@ export const Dashboard = () => {
                         <button
                             type="submit"
                             disabled={actSaving || !actMinutes}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#47C4B7] hover:bg-[#3db3a6] text-white font-extrabold rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#47C4B7] hover:bg-[#3db3a6] text-white font-extrabold text-[12px] sm:text-[15px] rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
                         >
                             {actSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Plus size={16} strokeWidth={3} />}
                             {actSaving ? 'Saving...' : 'Log Activity'}
@@ -1037,13 +1056,13 @@ export const Dashboard = () => {
                     <div className="flex items-center justify-between mb-6 z-[2] relative">
                         <div className="flex items-center gap-3 flex-1">
                             <Target size={16} className="text-[#47C4B7]" />
-                            <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Monthly Goals</h2>
+                            <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Monthly Goals</h2>
                             <span className="text-[11px] font-bold text-gray-400 whitespace-nowrap">— {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}</span>
                             <div className="flex-1 h-[1px] bg-gray-100 dark:bg-gray-800 ml-2" />
                         </div>
                         <button
                             onClick={() => setEditGoals(!editGoals)}
-                            className="text-[13px] font-bold px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-[#47C4B7]/20 text-gray-600 dark:text-gray-300 transition-all"
+                            className="text-[11px] sm:text-[13px] font-bold px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-[#47C4B7]/20 text-gray-600 dark:text-gray-300 transition-all"
                         >
                             {editGoals ? 'Cancel' : 'Edit Goals'}
                         </button>
@@ -1084,12 +1103,12 @@ export const Dashboard = () => {
                                 return (
                                     <div key={g.label}>
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[15px] font-bold text-gray-800 dark:text-white">{g.icon} {g.label}</span>
+                                            <span className="text-[12px] sm:text-[15px] font-bold text-gray-800 dark:text-white">{g.icon} {g.label}</span>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[13px] font-semibold text-gray-500">
+                                                <span className="text-[10px] sm:text-[13px] font-semibold text-gray-500">
                                                     {Math.floor(g.done)}hrs {Math.round((g.done % 1) * 60)}m / {g.target} hrs
                                                 </span>
-                                                <span className="text-[13px] font-black px-2 py-0.5 rounded-full" style={{ background: `${g.color}22`, color: g.color }}>{pct}%</span>
+                                                <span className="text-[10px] sm:text-[13px] font-black px-2 py-0.5 rounded-full" style={{ background: `${g.color}22`, color: g.color }}>{pct}%</span>
                                             </div>
                                         </div>
                                         <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -1118,10 +1137,10 @@ export const Dashboard = () => {
                                         : <XCircle size={22} className="text-red-400 flex-shrink-0" />
                                     }
                                     <div>
-                                        <p className={`text-[15px] font-extrabold ${todayHasActivity ? 'text-[#47C4B7]' : 'text-red-500'}`}>
+                                        <p className={`text-[12px] sm:text-[15px] font-extrabold ${todayHasActivity ? 'text-[#47C4B7]' : 'text-red-500'}`}>
                                             {todayHasActivity ? '✔ Completed' : '❌ Not Yet'}
                                         </p>
-                                        <p className="text-[13px] text-gray-400 font-medium">
+                                        <p className="text-[10px] sm:text-[13px] text-gray-400 font-medium">
                                             {todayHasActivity
                                                 ? `${todayActivities.reduce((s, a) => s + a.minutes, 0)} min logged today across ${todayActivities.length} activit${todayActivities.length > 1 ? 'ies' : 'y'}`
                                                 : 'No activity logged today. Start now!'}
@@ -1144,7 +1163,7 @@ export const Dashboard = () => {
                         <div className="p-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 shrink-0">
                             <Target size={18} strokeWidth={2.5} />
                         </div>
-                        <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Today's Tasks</h2>
+                        <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Today's Tasks</h2>
                     </div>
 
                     {/* Add Task Button for mobile shrinking */}
@@ -1156,10 +1175,11 @@ export const Dashboard = () => {
                             setPdfFile(null);
                             setIsAddModalOpen(true);
                         }}
-                        className="flex items-center justify-center gap-1.5 px-4 py-1.5 bg-[#47C4B7] hover:bg-[#3bb5a8] text-white font-extrabold text-[13px] rounded-xl shadow-xl transition-all group shrink-0"
+                        className="shrink-0 flex items-center justify-center gap-1.5 p-2 sm:px-4 sm:py-1.5 bg-[#47C4B7] hover:bg-[#3bb5a8] text-white font-extrabold text-[13px] rounded-full sm:rounded-xl shadow-xl transition-all group"
+                        title="Add Task"
                     >
-                        <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
-                        <span>Add Task</span>
+                        <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" strokeWidth={3} />
+                        <span className="hidden sm:inline">Add Task</span>
                     </button>
                 </div>
 
@@ -1176,7 +1196,7 @@ export const Dashboard = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
                                         <Calendar size={14} className="text-[#47C4B7]" />
-                                        <span className="text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                        <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
                                             {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </span>
                                     </div>
@@ -1210,79 +1230,106 @@ export const Dashboard = () => {
                                                         </button>
 
                                                         {/* Content */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className={`text-base font-bold truncate transition-colors ${task.status === 'completed' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                                                                {task.title}
-                                                            </h4>
-                                                            {task.description && (
-                                                                <div className="mt-1">
-                                                                    <p className={`text-[15px] text-gray-500 dark:text-gray-400 leading-snug transition-all duration-300 ${expandedTasks.has(task._id) ? '' : 'line-clamp-1'}`}>
-                                                                        {task.description}
+                                                        <div className="flex-1 min-w-0 flex flex-row items-center gap-2">
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className={`text-[12px] sm:text-[15px] font-bold truncate transition-colors ${task.status === 'completed' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                                                    {task.title}
+                                                                </h4>
+                                                                {task.description && (
+                                                                    <div className="mt-1">
+                                                                        <p className={`text-[12px] sm:text-[15px] text-gray-500 dark:text-gray-400 leading-snug break-words transition-all duration-300 ${expandedTasks.has(task._id) ? '' : 'line-clamp-1'}`}>
+                                                                            {task.description}
+                                                                        </p>
+                                                                        {task.description.length > 60 && (
+                                                                            <button
+                                                                                onClick={() => toggleExpandTask(task._id)}
+                                                                                className="text-[9px] sm:text-[11px] font-black text-[#47C4B7] hover:underline mt-0.5 flex items-center gap-1"
+                                                                            >
+                                                                                {expandedTasks.has(task._id) ? 'Show Less' : 'Read more'}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {task.createdAt && (
+                                                                    <p className="text-[10px] sm:text-[12px] text-gray-400 dark:text-gray-500 font-medium mt-1.5 flex items-center gap-1.5 whitespace-nowrap">
+                                                                        <Clock size={12} />
+                                                                        {new Date(task.createdAt).toLocaleString('en-US', {
+                                                                            month: 'short', day: 'numeric',
+                                                                            hour: '2-digit', minute: '2-digit'
+                                                                        })}
                                                                     </p>
-                                                                    {task.description.length > 60 && (
-                                                                        <button
-                                                                            onClick={() => toggleExpandTask(task._id)}
-                                                                            className="text-[11px] font-black text-[#47C4B7] hover:underline mt-0 flex items-center gap-1"
-                                                                        >
-                                                                            {expandedTasks.has(task._id) ? 'Show Less' : 'Read more'}
-                                                                        </button>
-                                                                    )}
+                                                                )}
+                                                            </div>
+
+                                                            {/* Only show Edit/Delete here on mobile if NO PDF - Vertically centered */}
+                                                            {!task.pdfUrl && (
+                                                                <div className="flex sm:hidden flex-row items-center gap-1 shrink-0">
+                                                                    <button
+                                                                        onClick={() => openEditModal(task)}
+                                                                        className="p-1 text-gray-400 hover:text-blue-500"
+                                                                        title="Edit Task"
+                                                                    >
+                                                                        <Pencil size={13} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setDeletingTaskId(task._id)}
+                                                                        className="p-1 text-gray-400 hover:text-red-500"
+                                                                        title="Delete Task"
+                                                                    >
+                                                                        <Trash2 size={13} />
+                                                                    </button>
                                                                 </div>
-                                                            )}
-                                                            {task.createdAt && (
-                                                                <p className="text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 sm:mt-2 flex items-center gap-1.5">
-                                                                    <Clock size={12} />
-                                                                    {new Date(task.createdAt).toLocaleString('en-US', {
-                                                                        month: 'short', day: 'numeric',
-                                                                        hour: '2-digit', minute: '2-digit'
-                                                                    })}
-                                                                </p>
                                                             )}
                                                         </div>
                                                     </div>
 
-                                                    {/* Mobile Separator */}
-                                                    <div className="sm:hidden h-px bg-gray-100 dark:bg-gray-700/30 w-full mb-0.5" />
+                                                    {/* Mobile Separator - Only show if PDF exists */}
+                                                    {task.pdfUrl && (
+                                                        <div className="sm:hidden h-px bg-gray-100 dark:bg-gray-700/30 w-full mb-0.5" />
+                                                    )}
 
                                                     {/* Action Buttons — bottom on mobile, right on desktop */}
-                                                    <div className="flex items-center gap-2 justify-end sm:shrink-0">
+                                                    <div className={`${!task.pdfUrl ? 'hidden sm:flex' : 'flex'} items-center gap-2 justify-end sm:shrink-0`}>
                                                         {task.pdfUrl && (
-                                                            <div className="flex items-center gap-3 text-red-600 dark:text-red-400 text-[13px] font-bold">
+                                                            <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 text-[10px] sm:text-[13px] font-black relative z-10">
                                                                 <a
                                                                     href={`${BASE_URL}${task.pdfUrl}`}
                                                                     target="_blank" rel="noreferrer"
+                                                                    onClick={(e) => e.stopPropagation()}
                                                                     className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                                     title="Open File"
                                                                 >
-                                                                    <FileText size={16} /> Open
+                                                                    <FileText size={12} className="sm:w-[14px] sm:h-[14px] shrink-0" /> Open
                                                                 </a>
                                                                 <button
+                                                                    type="button"
                                                                     onClick={(e) => {
                                                                         e.preventDefault();
-                                                                        handleDownloadFile(task.pdfUrl);
+                                                                        e.stopPropagation();
+                                                                        handleDownloadFile(task.pdfUrl, task.fileName);
                                                                     }}
                                                                     className="flex items-center gap-1 hover:text-red-800 dark:hover:text-red-300 transition-colors"
                                                                     title="Download File"
                                                                 >
-                                                                    <Download size={16} /> Download
+                                                                    <Download size={12} className="sm:w-[14px] sm:h-[14px] shrink-0" /> Download
                                                                 </button>
                                                             </div>
                                                         )}
 
                                                         <button
                                                             onClick={() => openEditModal(task)}
-                                                            className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                                            className={`${!task.pdfUrl ? 'hidden sm:block' : ''} p-1 text-gray-400 hover:text-blue-500 transition-colors`}
                                                             title="Edit Task"
                                                         >
-                                                            <Pencil size={18} />
+                                                            <Pencil className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px]" />
                                                         </button>
 
                                                         <button
                                                             onClick={() => setDeletingTaskId(task._id)}
-                                                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                            className={`${!task.pdfUrl ? 'hidden sm:block' : ''} p-1 text-gray-400 hover:text-red-500 transition-colors`}
                                                             title="Delete Task"
                                                         >
-                                                            <Trash2 size={18} />
+                                                            <Trash2 className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px]" />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1306,7 +1353,7 @@ export const Dashboard = () => {
                     <div className="p-2 rounded-full bg-[#47C4B7]/10 text-[#47C4B7] shrink-0">
                         <History size={18} strokeWidth={2.5} />
                     </div>
-                    <h2 className="text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Today's Study Hours</h2>
+                    <h2 className="text-[12px] sm:text-[15px] font-extrabold text-gray-600 dark:text-gray-400 tracking-tight">Today's Study Hours</h2>
                 </div>
 
                 <div className="space-y-6">
@@ -1315,7 +1362,7 @@ export const Dashboard = () => {
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
                                     <Calendar size={14} className="text-[#47C4B7]" />
-                                    <span className="text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
                                         {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                     </span>
                                 </div>
@@ -1337,15 +1384,15 @@ export const Dashboard = () => {
                                                     <CheckCircle2 size={14} strokeWidth={3} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="text-[15px] font-bold truncate text-gray-700 dark:text-gray-300">
-                                                        Today's {act.method && act.method !== 'Manual' ? act.method : act.type} Session
+                                                    <h4 className="text-[12px] sm:text-[15px] font-bold truncate text-gray-700 dark:text-gray-300">
+                                                        {act.method && act.method !== 'Manual' ? act.method : act.type} Session
                                                     </h4>
-                                                    <p className="text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 flex items-center gap-1.5 line-clamp-1">
+                                                    <p className="text-[10px] sm:text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 flex items-center gap-1.5 line-clamp-1">
                                                         <BookOpen size={12} />
                                                         {act.topic || 'Based on activity timer'}
                                                     </p>
                                                     {act.createdAt && (
-                                                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mt-2 sm:mt-3 flex items-center gap-1.5">
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-bold mt-2 sm:mt-3 flex items-center gap-1.5 whitespace-nowrap">
                                                             <Calendar size={10} className="text-[#47C4B7]" />
                                                             {new Date(act.createdAt).toLocaleString('en-US', {
                                                                 month: 'short', day: 'numeric',
@@ -1357,8 +1404,8 @@ export const Dashboard = () => {
                                             </div>
 
                                             <div className="flex items-center gap-2 justify-end shrink-0">
-                                                <div className="px-3 py-1 bg-[#47C4B7]/10 text-[#47C4B7]/80 rounded-md text-[13px] font-black flex items-center gap-1.5 shrink-0">
-                                                    <Clock size={13} className="opacity-70" />
+                                                <div className="px-2 py-0.5 bg-[#47C4B7]/10 text-[#47C4B7]/80 rounded-md text-[9px] sm:text-[13px] font-black flex items-center gap-1 shrink-0">
+                                                    <Clock size={10} className="opacity-70" />
                                                     {formatDisplayTime(act.minutes / 60)}
                                                 </div>
 
@@ -1367,7 +1414,7 @@ export const Dashboard = () => {
                                                     className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                                                     title="Delete Session"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                                                 </button>
                                             </div>
                                         </motion.div>

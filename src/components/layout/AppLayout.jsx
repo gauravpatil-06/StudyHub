@@ -335,8 +335,8 @@ export const AppLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 w-full p-4 sm:p-6 lg:p-10 overflow-x-hidden overflow-y-auto custom-scrollbar">
-                    <div className="h-full max-w-[1500px] mx-auto w-full relative">
+                <main className="flex-1 w-full overflow-x-hidden overflow-y-auto custom-scrollbar p-2.5 md:p-5 lg:p-[30px]">
+                    <div className="h-full mx-auto w-full relative max-w-full">
                         {pageLoading && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-50 dark:bg-gray-950 backdrop-blur-sm">
                                 <PageLoader />

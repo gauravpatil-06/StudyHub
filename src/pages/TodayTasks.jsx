@@ -81,7 +81,7 @@ export const TodayTasks = () => {
                 </p>
             </motion.header>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '6rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '2.5rem' }}>
                 <AnimatePresence>
                     {sortedTasks.length === 0 ? (
                         <motion.div

@@ -160,7 +160,7 @@ export const AdminStudyHours = () => {
     const totalStudyHoursFormatted = formatTime(totalMinutes);
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1500px] mx-auto">
+        <div className="space-y-6 pb-10 max-w-full mx-auto px-0">
             {/* Header Area */}
             <PageHeader
                 icon={Clock}
@@ -283,7 +283,7 @@ export const AdminStudyHours = () => {
                             className="flex flex-col gap-3"
                         >
                             {/* Primary Filter Row: Search + Secondary Filters */}
-                            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4">
+                            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
                                 {/* Search */}
                                 <div className="relative flex-1 group">
                                     <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isRefreshing ? 'text-[#47C4B7] animate-pulse' : 'text-gray-400'}`} size={16} />
@@ -297,7 +297,7 @@ export const AdminStudyHours = () => {
                                 </div>
 
                                 {/* Secondary Filters Container - 3 Separate Distinct Boxes */}
-                                <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-hidden">
+                                <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                     {/* Box 1: From Date */}
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
                                         <input
@@ -334,7 +334,7 @@ export const AdminStudyHours = () => {
                             </div>
 
                             {/* Row: Time Pills */}
-                            <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-2 flex-nowrap overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                 {filterOpts.map(pill => (
                                     <button
                                         key={pill.id}
@@ -382,7 +382,7 @@ export const AdminStudyHours = () => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
-                                            transition={{ type: "spring", stiffness: 100, damping: 15, delay: i * 0.04 }}
+                                            transition={{ type: "spring", stiffness: 100, damping: 15 }}
                                             className="hover:bg-[#47C4B7]/5 dark:hover:bg-[#47C4B7]/5 transition-colors group"
                                         >
                                             <td className="px-6 py-5 text-center border-r border-gray-800/20 dark:border-white/40">

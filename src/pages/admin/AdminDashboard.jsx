@@ -71,27 +71,35 @@ const formatDisplayTime = (decimalHours) => {
     return `${minutes} min`;
 };
 
-const StatCard = ({ label, value, icon: Icon, colorClass, borderColorClass, delay, rKey }) => (
-    <HoverCard
-        rKey={rKey}
-        delay={delay}
-        className={`glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-center shadow-xl min-h-[90px] ${borderColorClass || ''}`}
-    >
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-                <div className={`p-2 rounded-full ${colorClass.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
-                    <Icon size={18} className={`${colorClass} shrink-0`} strokeWidth={2.5} />
-                </div>
-                <div className="flex flex-col min-w-0">
-                    <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">{label}</p>
-                    <h3 className="text-[13px] font-black text-gray-600 dark:text-gray-200 leading-none tracking-tight truncate">
-                        {value}
-                    </h3>
+const StatCard = ({ label, value, icon: Icon, colorClass, delay, rKey, borderColorClass, path }) => {
+    const content = (
+        <HoverCard
+            rKey={rKey}
+            delay={delay}
+            className={`glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 xl:p-2.5 flex flex-col justify-center shadow-xl h-full min-h-[70px] ${borderColorClass || ''}`}
+        >
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className={`p-2 rounded-full ${colorClass.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
+                        <Icon size={18} className={`${colorClass} shrink-0`} strokeWidth={2.5} />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <p className="text-[clamp(11px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">{label}</p>
+                        <h3 className="text-[clamp(10px,1.1vw,13px)] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
+                            {value}
+                        </h3>
+                    </div>
                 </div>
             </div>
-        </div>
-    </HoverCard>
-);
+        </HoverCard>
+    );
+
+    return path ? (
+        <Link to={path} className="block no-underline h-full">
+            {content}
+        </Link>
+    ) : content;
+};
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
@@ -263,7 +271,7 @@ export const AdminDashboard = () => {
     if (!user) return <PageLoader />;
     
     return (
-        <div className="space-y-6 sm:space-y-8 pb-20 max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6">
+        <div className="space-y-6 sm:space-y-8 pb-10 max-w-full mx-auto px-0">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -304,7 +312,7 @@ export const AdminDashboard = () => {
                         className="flex flex-col gap-3"
                     >
                         {/* Primary Filter Row: Search + Secondary Filters */}
-                        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
                             {/* Search */}
                             <div className="relative flex-1 group">
                                 <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isRefreshing ? 'text-[#47C4B7] animate-pulse' : 'text-gray-400'}`} size={16} />
@@ -318,7 +326,7 @@ export const AdminDashboard = () => {
                             </div>
 
                             {/* Secondary Filters Container - 3 Separate Distinct Boxes */}
-                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full lg:w-auto overflow-hidden">
+                            <div className="flex flex-row flex-nowrap items-center justify-start gap-2 w-full md:w-auto overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                                 {/* Box 1: From Date */}
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
                                     <input
@@ -351,7 +359,7 @@ export const AdminDashboard = () => {
                         </div>
 
                         {/* Row: Time Pills */}
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-nowrap overflow-x-auto custom-scrollbar pb-2 md:pb-0">
                             {filterOpts.map(pill => (
                                 <button
                                     key={pill.id}
@@ -369,81 +377,74 @@ export const AdminDashboard = () => {
                 </AnimatePresence>
             </div>
 
-            {/* ── 10 Stat Boxes ─────────────────────────────────────────── */}
-            <div className="space-y-4">
-                {/*
-                    Mobile:  2 columns
-                    Tablet:  3 columns
-                    Desktop: 5 columns
-                */}
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                    {/* Row 1 */}
-                    <StatCard rKey={`users-${refreshKey}`} delay={0.05} label="Total Users" value={data.totalUsers} icon={Users} colorClass="text-indigo-500" />
-                    <StatCard rKey={`study-${refreshKey}`} delay={0.10} label="Study Time" value={formatDisplayTime(data.totalStudyHours)} icon={Clock} colorClass="text-[#47C4B7]" />
-                    <StatCard rKey={`coding-${refreshKey}`} delay={0.15} label="Coding" value={formatDisplayTime(data.totalCodingHours)} icon={Activity} colorClass="text-indigo-500" />
-                    <StatCard rKey={`watch-${refreshKey}`} delay={0.20} label="Watching" value={formatDisplayTime(data.totalWatchingHours)} icon={BarChart3} colorClass="text-rose-500" />
-                    
-                    {/* Completion (Now 5th) */}
-                    <HoverCard
-                        rKey={`progress-${refreshKey}`}
-                        delay={0.25}
-                        className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-between shadow-xl min-h-[90px]"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="p-2 rounded-full bg-[#47C4B7]/10 flex items-center justify-center">
-                                    <CheckCircle2 size={18} className="text-[#47C4B7] shrink-0" strokeWidth={2.5} />
-                                </div>
-                                <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight">Completion</p>
+            {/* Top Stat Cards Grid - 10 boxes, 5 cols on desktop, 2 on mobile */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3">
+                {/* Row 1 */}
+                <StatCard rKey={`users-${refreshKey}`} delay={0.05} label="Total Users" value={data.totalUsers} icon={Users} colorClass="text-indigo-500" />
+                <StatCard rKey={`study-${refreshKey}`} delay={0.10} label="Study Time" value={formatDisplayTime(data.totalStudyHours)} icon={Clock} colorClass="text-[#47C4B7]" />
+                <StatCard rKey={`coding-${refreshKey}`} delay={0.15} label="Coding" value={formatDisplayTime(data.totalCodingHours)} icon={Activity} colorClass="text-indigo-500" />
+                <StatCard rKey={`watch-${refreshKey}`} delay={0.20} label="Watching" value={formatDisplayTime(data.totalWatchingHours)} icon={BarChart3} colorClass="text-rose-500" />
+                
+                {/* Completion (5th Box) */}
+                <HoverCard
+                    rKey={`progress-${refreshKey}`}
+                    delay={0.25}
+                    className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 xl:p-2.5 flex flex-col justify-center shadow-xl h-full min-h-[70px]"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 rounded-full bg-[#47C4B7]/10 flex items-center justify-center">
+                                <CheckCircle2 size={18} className="text-[#47C4B7] shrink-0" strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-lg font-semibold text-[#47C4B7] leading-none tracking-tight">
-                                {parseFloat(data.completionRate) % 1 === 0 ? parseInt(data.completionRate) : data.completionRate}%
-                            </h3>
+                            <p className="text-[clamp(11px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight">Completion</p>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-3">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${parseFloat(data.completionRate) || 0}%` }}
-                                transition={{ duration: 1.5, ease: "circOut", delay: 0.5 }}
-                                className="h-full bg-gradient-to-r from-[#47C4B7] to-emerald-400 rounded-full"
-                            />
-                        </div>
-                    </HoverCard>
+                        <h3 className="text-[clamp(10px,1.1vw,13px)] font-black text-[#47C4B7] leading-none tracking-tight">
+                            {parseFloat(data.completionRate) % 1 === 0 ? parseInt(data.completionRate) : data.completionRate}%
+                        </h3>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mt-1.5 md:mt-2 lg:mt-3">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${parseFloat(data.completionRate) || 0}%` }}
+                            transition={{ duration: 1.5, ease: "circOut", delay: 0.5 }}
+                            className="h-full bg-gradient-to-r from-[#47C4B7] to-emerald-400 rounded-full"
+                        />
+                    </div>
+                </HoverCard>
 
-                    {/* Row 2 */}
-                    <StatCard rKey={`tasks-${refreshKey}`} delay={0.30} label="All Tasks" value={data.totalTasks} icon={CheckCircle2} colorClass="text-emerald-500" />
-                    <StatCard rKey={`activity-${refreshKey}`} delay={0.35} label="Activity Log" value={data.totalActivities} icon={Activity} colorClass="text-amber-500" />
-                    <StatCard rKey={`pdfs-${refreshKey}`} delay={0.40} label="Study Materials" value={data.totalMaterials} icon={FileText} colorClass="text-blue-500" />
-                    <StatCard rKey={`feedback-${refreshKey}`} delay={0.45} label="Feedback" value={data.totalFeedback} icon={BookOpen} colorClass="text-purple-500" />
+                {/* Row 2 */}
+                <StatCard rKey={`tasks-${refreshKey}`} delay={0.30} label="All Tasks" value={data.totalTasks} icon={CheckCircle2} colorClass="text-emerald-500" />
+                <StatCard rKey={`activity-${refreshKey}`} delay={0.35} label="Activity Log" value={data.totalActivities} icon={Activity} colorClass="text-amber-500" />
+                <StatCard rKey={`pdfs-${refreshKey}`} delay={0.40} label="Study Materials" value={data.totalMaterials} icon={FileText} colorClass="text-blue-500" />
+                <StatCard rKey={`feedback-${refreshKey}`} delay={0.45} label="Feedback" value={data.totalFeedback} icon={BookOpen} colorClass="text-purple-500" />
 
-                    {/* Top Streak (Now 10th) */}
-                    <HoverCard
-                        rKey={`trophy-${refreshKey}`}
-                        delay={0.50}
-                        className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-4 pr-4 pl-4 flex flex-col justify-center shadow-xl min-h-[90px] relative overflow-hidden group"
-                        extraHover={{ borderColor: 'rgba(249, 115, 22, 0.6)', boxShadow: '0 20px 40px -8px rgba(249, 115, 22, 0.22)' }}
-                    >
-                        <div className="absolute -right-2 -top-2 opacity-5 blur-lg w-16 h-16 bg-orange-500 rounded-full" />
-                        <div className="flex items-center justify-between relative z-10">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="p-2 rounded-full bg-orange-500/10 flex items-center justify-center">
-                                    <Trophy size={18} className="text-orange-500 shrink-0" strokeWidth={2.5} />
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                    <p className="text-[15px] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">Top Streak</p>
-                                    <h3 className="text-[13px] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
-                                        {data.highestStreakUser.split('(')[0].trim()}
-                                    </h3>
-                                </div>
+                {/* Top Streak (10th Box) */}
+                <HoverCard
+                    rKey={`trophy-${refreshKey}`}
+                    delay={0.50}
+                    className="glass-card bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-1 xl:p-2.5 flex flex-col justify-center shadow-xl h-full min-h-[70px] relative overflow-hidden group"
+                    extraHover={{ borderColor: 'rgba(249, 115, 22, 0.6)', boxShadow: '0 20px 40px -8px rgba(249, 115, 22, 0.22)' }}
+                >
+                    <div className="absolute -right-2 -top-2 opacity-5 blur-lg w-16 h-16 bg-orange-500 rounded-full" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 rounded-full bg-orange-500/10 flex items-center justify-center">
+                                <Trophy size={18} className="text-orange-500 shrink-0" strokeWidth={2.5} />
                             </div>
-                            {data.highestStreakUser.includes('(') && (
-                                <span className="text-[9px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded shrink-0">
-                                    {data.highestStreakUser.split('(')[1].split(' ')[0]}d
-                                </span>
-                            )}
+                            <div className="flex flex-col min-w-0">
+                                <p className="text-[clamp(11px,1.2vw,15px)] font-bold text-gray-500 dark:text-gray-400 truncate tracking-tight mb-0.5">Top Streak</p>
+                                <h3 className="text-[clamp(10px,1.1vw,13px)] font-black text-gray-600 dark:text-gray-400 leading-none tracking-tight truncate">
+                                    {data.highestStreakUser.split('(')[0].trim()}
+                                </h3>
+                            </div>
                         </div>
-                    </HoverCard>
-                </div>
+                        {data.highestStreakUser.includes('(') && (
+                            <span className="text-[9px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded shrink-0">
+                                {data.highestStreakUser.split('(')[1].split(' ')[0]}d
+                            </span>
+                        )}
+                    </div>
+                </HoverCard>
             </div>
 
             {/* ── Charts (responsive) ───────────────────────────────────── */}

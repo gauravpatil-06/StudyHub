@@ -11,7 +11,7 @@ export default {
                 primary: "#47C4B7",
             },
             fontFamily: {
-                sans: ['Inter', 'Poppins', 'sans-serif'],
+                sans: ['Outfit', 'Inter', 'Poppins', 'sans-serif'],
             },
         },
     },

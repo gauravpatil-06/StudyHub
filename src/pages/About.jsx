@@ -55,7 +55,7 @@ const FAQItem = ({ question, answer, isOpen, onClick, i, refreshKey }) => (
             onClick={onClick}
             className="w-full flex items-center justify-between px-5 py-[11.5px] text-left focus:outline-none"
         >
-            <span className={`text-[0.95rem] font-bold transition-colors ${isOpen ? 'text-[#47C4B7]' : 'text-gray-900/75 dark:text-gray-100'}`}>
+            <span className={`text-[12px] sm:text-[0.95rem] font-bold transition-colors ${isOpen ? 'text-[#47C4B7]' : 'text-gray-900/75 dark:text-gray-100'}`}>
                 {question}
             </span>
             <motion.div
@@ -74,7 +74,7 @@ const FAQItem = ({ question, answer, isOpen, onClick, i, refreshKey }) => (
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <div className="px-5 pb-5 text-[1rem] text-gray-600 dark:text-gray-400 font-medium leading-relaxed border-t border-gray-50 dark:border-gray-800/50 pt-3">
+                    <div className="px-5 pb-5 text-[12px] sm:text-[1rem] text-gray-600 dark:text-gray-400 font-medium leading-relaxed border-t border-gray-50 dark:border-gray-800/50 pt-3">
                         {answer}
                     </div>
                 </motion.div>
@@ -281,7 +281,7 @@ export const About = () => {
     ];
 
     return (
-        <div className="pb-20 space-y-6 max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="pb-4 space-y-4 sm:space-y-6 max-w-full px-2 sm:px-0">
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -289,20 +289,20 @@ export const About = () => {
                 className="flex flex-col gap-1.5 bg-transparent mb-6 w-full pt-4"
             >
                 <div className="flex items-center justify-between gap-2 w-full min-w-0">
-                    <h1 className="text-lg sm:text-xl font-black text-gray-600 dark:text-gray-300 tracking-tight flex items-center gap-2 min-w-0">
-                        <Info className="text-[#47C4B7]/70 shrink-0" size={18} />
+                    <h1 className="text-[14px] sm:text-xl font-black text-gray-600 dark:text-gray-300 tracking-tight flex items-center gap-2 min-w-0">
+                        <Info className="text-[#47C4B7]/70 shrink-0" size={16} />
                         <span className="truncate">About StudyHub</span>
                     </h1>
                     <button
                         onClick={handleRefresh}
-                        className={`shrink-0 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-500 hover:text-[#47C4B7] transition-all hover:shadow-md ${isRefreshing ? 'animate-spin cursor-not-allowed opacity-50' : ''}`}
+                        className={`shrink-0 p-1.5 sm:p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-500 hover:text-[#47C4B7] transition-all hover:shadow-md ${isRefreshing ? 'animate-spin cursor-not-allowed opacity-50' : ''}`}
                         title="Refresh Page"
                         disabled={isRefreshing}
                     >
-                        <RefreshCw size={16} />
+                        <RefreshCw size={14} className="sm:w-[16px] sm:h-[16px]" />
                     </button>
                 </div>
-                <p className="text-[13px] font-semibold italic text-gray-500 border-l-4 border-[#47C4B7] pl-3 pr-2 w-full break-words">
+                <p className="text-[11px] sm:text-[13px] font-semibold italic text-gray-500 border-l-4 border-[#47C4B7] pl-3 pr-2 w-full break-words">
                     Plan, track progress, and build better study habits.
                 </p>
             </motion.div>
@@ -315,17 +315,17 @@ export const About = () => {
             >
                 <div className="px-6 py-6 md:py-12 relative flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-8 md:gap-16">
                     {/* Logo - Shifted right on laptop, compact on mobile */}
-                    <div className="shrink-0 relative z-10 flex justify-center items-center md:ml-10">
-                        <div className="w-[140px] h-[140px] sm:w-[200px] sm:h-[200px] rounded-full flex items-center justify-center overflow-hidden">
-                            <img src={logo} alt="StudyHub Logo" className="w-full h-full object-contain scale-125" />
+                    <div className="shrink-0 relative z-10 flex justify-center items-center md:ml-6 lg:ml-10">
+                        <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] md:w-[200px] md:h-[200px] rounded-full flex items-center justify-center overflow-hidden">
+                            <img src={logo} alt="StudyHub Logo" className="w-full h-full object-contain scale-110 sm:scale-125" />
                         </div>
                     </div>
 
-                    <div className="space-y-5 flex-1 text-center md:text-left">
+                    <div className="space-y-5 flex-1 text-center">
 
-                        <h1 className="text-[20px] sm:text-[30px] font-extrabold leading-[1.15] tracking-tight">
+                        <h1 className="text-[16px] sm:text-[22px] md:text-[22px] xl:text-[30px] font-extrabold leading-[1.15] tracking-tight text-center">
                             <span className="text-[#47C4B7]">StudyHub</span>
-                            <span className="text-gray-500 dark:text-gray-400 font-bold ml-2">is a modern productivity platform for focused learning.</span>
+                            <span className="text-gray-500 dark:text-gray-400 font-bold ml-1.5 sm:ml-2">is a modern productivity platform for focused learning.</span>
                         </h1>
 
                         <div className="space-y-2 max-w-2xl mt-2">
@@ -341,7 +341,7 @@ export const About = () => {
                                             <ChevronRight size={12} className="text-[#47C4B7]" strokeWidth={3} />
                                         </div>
                                     </div>
-                                    <p className="text-[0.9375rem] text-gray-700/90 dark:text-gray-200 font-medium leading-[1.4] text-left border-l border-gray-100 dark:border-gray-800/80 pl-2">
+                                    <p className="text-[13px] sm:text-[14px] md:text-[0.9375rem] text-gray-700/90 dark:text-gray-200 font-medium leading-[1.3] sm:leading-[1.4] text-left border-l border-gray-100 dark:border-gray-800/80 pl-2">
                                         {text}
                                     </p>
                                 </div>
@@ -353,37 +353,37 @@ export const About = () => {
             </HoverCard>
 
             {/* ECOSYSTEM SECTION */}
-            <div className="space-y-6 pt-6">
-                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-4">
-                    <div className="p-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-500 shrink-0">
-                        <Globe size={18} strokeWidth={2.5} />
+            <div className="space-y-3 sm:space-y-6 pt-4 sm:pt-6">
+                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-3 sm:pb-4">
+                    <div className="p-1.5 sm:p-2 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-500 shrink-0">
+                        <Globe size={14} className="sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h2 className="text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Our Ecosystem</h2>
-                        <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Core features designed to support your learning and productivity.</p>
+                        <h2 className="text-[14px] sm:text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Our Ecosystem</h2>
+                        <p className="text-[11px] sm:text-[13px] font-medium text-gray-500 dark:text-gray-400">Core features designed to support your learning.</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                     {aboutSections.map((section, i) => (
                         <HoverCard
                             key={section.title}
                             rKey={`${section.title}-${refreshKey}`}
                             delay={0.1 + (i % 4) * 0.05}
-                            className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-4 sm:p-5 shadow-lg border-2 border-gray-100 dark:border-gray-800 flex flex-col items-start gap-4"
+                            className="bg-white dark:bg-gray-900 rounded-[1rem] sm:rounded-[1.5rem] p-2 sm:p-5 shadow-lg border-2 border-gray-100 dark:border-gray-800 flex flex-col items-start gap-1.5 sm:gap-4"
                         >
-                            <div className="flex items-center gap-3 w-full">
-                                <div className="w-8 h-8 bg-[#47C4B7]/10 rounded-full flex items-center justify-center text-[#47C4B7] shrink-0 border border-[#47C4B7]/10">
-                                    <section.icon size={16} />
+                            <div className="flex items-center gap-1.5 sm:gap-3 w-full">
+                                <div className="w-4.5 h-4.5 sm:w-8 sm:h-8 bg-[#47C4B7]/10 rounded-full flex items-center justify-center text-[#47C4B7] shrink-0 border border-[#47C4B7]/10">
+                                    <section.icon size={10} className="sm:w-[16px] sm:h-[16px]" />
                                 </div>
-                                <h3 className="text-[0.9375rem] font-bold text-gray-900/85 dark:text-gray-100 leading-tight">{section.title}</h3>
+                                <h3 className="text-[10.5px] sm:text-[0.9375rem] font-bold text-gray-900/85 dark:text-gray-100 leading-tight">{section.title}</h3>
                             </div>
 
-                            <div className="space-y-2 w-full">
+                            <div className="space-y-1 sm:space-y-2 w-full">
                                 {section.points.map((point, pIdx) => (
-                                    <div key={pIdx} className="flex items-start gap-2">
-                                        <div className="mt-1.5 w-1 h-1 rounded-full bg-[#47C4B7] shrink-0"></div>
-                                        <p className="text-[0.8125rem] text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
+                                    <div key={pIdx} className="flex items-start gap-1 sm:gap-2">
+                                        <div className="mt-1 sm:mt-1.5 w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-[#47C4B7] shrink-0"></div>
+                                        <p className="text-[8.25px] sm:text-[11.5px] md:text-[0.8125rem] text-gray-600 dark:text-gray-400 font-medium leading-tight sm:leading-relaxed">
                                             {point}
                                         </p>
                                     </div>
@@ -395,37 +395,37 @@ export const About = () => {
             </div>
 
             {/* CAPABILITIES SECTION */}
-            <div className="space-y-6 pt-10">
-                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-4">
-                    <div className="p-2 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-500 shrink-0">
-                        <Diamond size={18} strokeWidth={2.5} />
+            <div className="space-y-3 sm:space-y-6 pt-4 sm:pt-10">
+                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-3 sm:pb-4">
+                    <div className="p-1.5 sm:p-2 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-500 shrink-0">
+                        <Diamond size={14} className="sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h2 className="text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Capabilities</h2>
-                        <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Everything you need to succeed in one place.</p>
+                        <h2 className="text-[14px] sm:text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Capabilities</h2>
+                        <p className="text-[11px] sm:text-[13px] font-medium text-gray-500 dark:text-gray-400">Everything you need to succeed in one place.</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
                     {features.map((feature, i) => (
                         <HoverCard
                             key={feature.title}
                             rKey={`feat-${feature.title}-${refreshKey}`}
                             delay={0.2 + (i % 4) * 0.05}
-                            className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-4 sm:p-5 shadow-lg border-2 border-gray-100 dark:border-gray-800 flex flex-col items-start gap-4"
+                            className="bg-white dark:bg-gray-900 rounded-[1rem] sm:rounded-[1.5rem] p-2 sm:p-5 shadow-lg border-2 border-gray-100 dark:border-gray-800 flex flex-col items-start gap-1.5 sm:gap-4"
                         >
-                            <div className="flex items-center gap-3 w-full">
-                                <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-500 shrink-0 border border-amber-100/30">
-                                    <feature.icon size={16} />
+                            <div className="flex items-center gap-1.5 sm:gap-3 w-full">
+                                <div className="w-4.5 h-4.5 sm:w-8 sm:h-8 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-500 shrink-0 border border-amber-100/30">
+                                    <feature.icon size={10} className="sm:w-[16px] sm:h-[16px]" />
                                 </div>
-                                <h3 className="text-[0.9375rem] font-bold text-gray-900/85 dark:text-gray-100 leading-tight">{feature.title}</h3>
+                                <h3 className="text-[10.5px] sm:text-[0.9375rem] font-bold text-gray-900/85 dark:text-gray-100 leading-tight">{feature.title}</h3>
                             </div>
 
-                            <div className="space-y-2 w-full">
+                            <div className="space-y-1 sm:space-y-2 w-full">
                                 {feature.points.map((point, pIdx) => (
-                                    <div key={pIdx} className="flex items-start gap-2">
-                                        <div className="mt-1.5 w-1 h-1 rounded-full bg-amber-500 shrink-0"></div>
-                                        <p className="text-[0.8125rem] text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
+                                    <div key={pIdx} className="flex items-start gap-1 sm:gap-2">
+                                        <div className="mt-1 sm:mt-1.5 w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-amber-500 shrink-0"></div>
+                                        <p className="text-[8.25px] sm:text-[11.5px] md:text-[0.8125rem] text-gray-600 dark:text-gray-400 font-medium leading-tight sm:leading-relaxed">
                                             {point}
                                         </p>
                                     </div>
@@ -438,14 +438,14 @@ export const About = () => {
 
 
             {/* FAQ SECTION */}
-            <div className="space-y-6 pt-10">
-                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-4">
-                    <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 shrink-0">
-                        <MessageSquare size={18} strokeWidth={2.5} />
+            <div className="space-y-3 sm:space-y-6 pt-4 sm:pt-10">
+                <div className="flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 pb-3 sm:pb-4">
+                    <div className="p-1.5 sm:p-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 shrink-0">
+                        <MessageSquare size={14} className="sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h2 className="text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Common Questions (FAQ)</h2>
-                        <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Everything you need to know.</p>
+                        <h2 className="text-[14px] sm:text-[1.05rem] font-bold tracking-tight text-gray-900 dark:text-white">Common Questions (FAQ)</h2>
+                        <p className="text-[11px] sm:text-[13px] font-medium text-gray-500 dark:text-gray-400">Everything you need to know.</p>
                     </div>
                 </div>
 
@@ -473,25 +473,25 @@ export const About = () => {
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#47C4B7]/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
-                <div className="flex items-center justify-between mb-2 border-b border-gray-100 dark:border-gray-800 pb-6 relative z-10">
+                <div className="flex items-center justify-between mb-4 sm:mb-2 border-b border-gray-100 dark:border-gray-800 pb-4 sm:pb-6 relative z-10">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-[#47C4B7]/10 rounded-2xl text-[#47C4B7] shadow-sm">
-                            <User size={20} strokeWidth={2.5} />
+                        <div className="p-1.5 sm:p-2.5 bg-[#47C4B7]/10 rounded-2xl text-[#47C4B7] shadow-sm">
+                            <User size={14} className="sm:w-[20px] sm:h-[20px]" strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[1.1rem] font-bold tracking-tight text-gray-900 dark:text-white">Developer</h3>
+                        <h3 className="text-[14px] sm:text-[1.1rem] font-bold tracking-tight text-gray-900 dark:text-white">Developer</h3>
                     </div>
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-5 md:gap-20 md:items-start items-center">
                     <div className="shrink-0 md:ml-5 flex flex-col items-center gap-4">
-                        <div className="w-40 h-40 rounded-full overflow-hidden shadow-lg border-2 border-white dark:border-gray-800">
+                        <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden shadow-lg border-2 border-white dark:border-gray-800">
                             <img src={profileImage} alt="Developer" className="w-full h-full object-cover" />
                         </div>
                         <a
                             href="https://portfolio-gaurav-patil.netlify.app/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-[0.95rem] hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/link"
+                            className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-[13px] sm:text-[0.95rem] hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/link"
                         >
                             <span>Portfolio</span>
                             <ExternalLink size={14} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
@@ -499,7 +499,7 @@ export const About = () => {
                     </div>
 
                     <div className="flex-1 space-y-6 w-full">
-                        <div className="grid grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 lg:grid-flow-col gap-x-6 md:gap-x-16 gap-y-7 relative z-10 pl-4 sm:pl-0">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-x-4 md:gap-x-12 gap-y-4 md:gap-y-7 relative z-10 pl-0">
                             {[
                                 { label: "Name", value: "Gaurav Patil" },
                                 { label: "Phone", value: "7875335539", href: "tel:7875335539" },
@@ -508,21 +508,21 @@ export const About = () => {
                                 { label: "LinkedIn", value: "gaurav-pati06", href: "https://www.linkedin.com/in/gaurav-pati06/" },
                                 { label: "GitHub", value: "gauravpatil-06", href: "https://github.com/gauravpatil-06" }
                             ].map((item, i) => (
-                                <div key={item.label} className="flex flex-col gap-1">
-                                    <p className="text-[1rem] font-bold text-gray-900/85 dark:text-gray-100">{item.label}</p>
+                                <div key={item.label} className="flex flex-col gap-0.5">
+                                    <p className="text-[11px] sm:text-[1rem] font-bold text-gray-900/85 dark:text-gray-100">{item.label}</p>
                                     {item.href ? (
-                                        <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all break-all">
+                                        <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all break-words">
                                             {item.value}
                                         </a>
                                     ) : (
-                                        <span className="text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400">{item.value}</span>
+                                        <span className="text-[10px] sm:text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400">{item.value}</span>
                                     )}
                                 </div>
                             ))}
                         </div>
                         <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <Handshake className="text-[#47C4B7]" size={18} />
-                            <p className="text-gray-900/50 dark:text-gray-400/50 font-bold text-[0.875rem] italic">
+                            <Handshake className="text-[#47C4B7] shrink-0 w-[14px] h-[14px] sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
+                            <p className="text-gray-900/50 dark:text-gray-400/50 font-bold text-[10px] sm:text-[0.875rem] italic">
                                 Feel free to connect for collaboration or queries.
                             </p>
                         </div>
@@ -531,8 +531,8 @@ export const About = () => {
             </HoverCard>
 
             {/* Footer */}
-            <div className="pt-16 pb-6 text-center">
-                <p className="text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400">
+            <div className="pt-6 pb-2 text-center">
+                <p className="text-[11px] sm:text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400">
                     © 2026 StudyHub · Precision Productivity
                 </p>
             </div>

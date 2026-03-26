@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { MaterialProvider } from './context/MaterialContext';
+import { ActivityProvider } from './context/ActivityContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { PageLoader } from './components/ui/PageLoader';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -27,6 +28,7 @@ import { Analytics } from './pages/Analytics.jsx';
 import { ActivityLog } from './pages/ActivityLog.jsx';
 import { About } from './pages/About.jsx';
 import { Feedback } from './pages/Feedback.jsx';
+import { LandingPage } from './pages/LandingPage.jsx';
 
 function AppRoutes() {
   const { isSessionValid, isLoading, user } = useAuth();
@@ -42,7 +44,7 @@ function AppRoutes() {
       {/* Public Auth Routes */}
       <Route path="/login" element={isSessionValid ? <Navigate to={getHomeRoute()} /> : <Auth />} />
       <Route path="/register" element={isSessionValid ? <Navigate to={getHomeRoute()} /> : <Auth />} />
-      <Route path="/" element={isSessionValid ? <Navigate to={getHomeRoute()} /> : <Navigate to="/login" />} />
+      <Route path="/" element={isSessionValid ? <Navigate to={getHomeRoute()} /> : <LandingPage />} />
 
       {/* Protected Routes wrapped in AppLayout */}
       <Route element={<AppLayout />}>
@@ -85,9 +87,11 @@ function App() {
       <AuthProvider>
         <TaskProvider>
           <MaterialProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
+            <ActivityProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </ActivityProvider>
           </MaterialProvider>
         </TaskProvider>
       </AuthProvider>

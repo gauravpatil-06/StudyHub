@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Calendar, Trash2, BookOpen, Code2, Tv, Clock, Zap, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { useActivities } from '../context/ActivityContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import { PageLoader } from '../components/ui/PageLoader';
@@ -17,10 +18,19 @@ const TYPE_META = {
 const formatMins = (mins) => {
     if (!mins) return '0 m';
     const h = Math.floor(mins / 60);
-    const m = mins % 60;
+    const m = Math.floor(mins % 60);
     if (h > 0 && m > 0) return `${h} hrs ${m} m`;
     if (h > 0) return `${h} hrs`;
     return `${m} m`;
+};
+
+const formatDisplayTime = (decimalHours) => {
+    const totalMinutes = Math.round(parseFloat(decimalHours || 0) * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0 && minutes > 0) return `${hours} hrs ${minutes} m`;
+    if (hours > 0) return `${hours} hrs`;
+    return `${minutes} m`;
 };
 
 const parseLocalDate = (isoStr) => {
@@ -69,8 +79,7 @@ const HoverCard = ({ children, className, style, delay, rKey, extraHover = {} })
 };
 
 export const ActivityLog = () => {
-    const [activities, setActivities] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { activities, isLoading: globalLoading, fetchActivities, deleteActivity } = useActivities();
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [filters, setFilters] = useState({
@@ -81,44 +90,25 @@ export const ActivityLog = () => {
     });
     const [deletingActivityId, setDeletingActivityId] = useState(null);
 
-    const fetchActivities = useCallback(async (showRefresh = false) => {
-        try {
-            if (showRefresh) {
-                setRefreshing(true);
-                // Don't wipe data on soft refresh — keeps search bar stable
-            } else {
-                setLoading(true);
-                setActivities([]); // Only wipe on initial load to trigger entry animations
-            }
-            const { data } = await api.get('/activity');
-            setActivities(data || []);
-            if (showRefresh) setRefreshKey(prev => prev + 1); // Trigger card re-animation on refresh
-        } catch (err) {
-            console.error('Activity fetch error:', err);
-            toast.error('Failed to load activities');
-        } finally {
-            setLoading(false);
-            if (showRefresh) {
-                setTimeout(() => setRefreshing(false), 600);
-            }
-        }
-    }, []);
-
     const handleRefresh = async () => {
+        setRefreshing(true);
         setFilters({ searchTerm: '', from: '', to: '', timeFilter: 'all' });
-        await fetchActivities(true);
-        setRefreshKey(prev => prev + 1);
+        try {
+            await fetchActivities();
+            setRefreshKey(prev => prev + 1);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setTimeout(() => setRefreshing(false), 600);
+        }
     };
 
-    useEffect(() => { fetchActivities(); }, [fetchActivities]);
-
     // Auto-refresh whenever user navigates back to this page or switches tab
-    // Use showRefresh=true so it does NOT show the full-page spinner (only spins the refresh btn)
     useEffect(() => {
         const onVisible = () => {
-            if (document.visibilityState === 'visible') fetchActivities(true);
+            if (document.visibilityState === 'visible') fetchActivities();
         };
-        const onFocus = () => fetchActivities(true);
+        const onFocus = () => fetchActivities();
         document.addEventListener('visibilitychange', onVisible);
         window.addEventListener('focus', onFocus);
         return () => {
@@ -130,8 +120,7 @@ export const ActivityLog = () => {
     const handleConfirmDeleteActivity = async () => {
         if (!deletingActivityId) return;
         try {
-            await api.delete(`/activity/${deletingActivityId}`);
-            setActivities(prev => prev.filter(a => a._id !== deletingActivityId));
+            await deleteActivity(deletingActivityId);
             toast.success('Activity deleted');
             setDeletingActivityId(null);
         } catch {
@@ -139,10 +128,10 @@ export const ActivityLog = () => {
         }
     };
 
-    /* Group by local calendar date (UTC-stored → local day display) */
-    const groupedActivities = useMemo(() => {
+    /* Filter activities based on searchTerm and time filters */
+    const filteredActivities = useMemo(() => {
         const searchLower = filters.searchTerm.toLowerCase();
-        const filtered = activities.filter(a => {
+        return activities.filter(a => {
             const localDate = parseLocalDate(a.date);
             const dateStr = formatGroupDate(localDate).toLowerCase();
             const sessionTitle = `${a.method && a.method !== 'Manual' ? a.method : a.type} Session`.toLowerCase();
@@ -173,9 +162,17 @@ export const ActivityLog = () => {
 
             return textMatch && dateMatch;
         });
+    }, [activities, filters]);
 
+    /* Summary stats - Calculated based on filtered results */
+    const filteredTotalMins = useMemo(() => 
+        filteredActivities.reduce((s, a) => s + a.minutes, 0)
+    , [filteredActivities]);
+
+    /* Group activities by local calendar date */
+    const groupedActivities = useMemo(() => {
         const groups = {};
-        filtered.forEach(a => {
+        filteredActivities.forEach(a => {
             const localDate = parseLocalDate(a.date);
             const key = formatGroupDate(localDate);
             if (!groups[key]) groups[key] = { label: key, localDate, items: [] };
@@ -183,15 +180,14 @@ export const ActivityLog = () => {
         });
 
         return Object.values(groups).sort((a, b) => b.localDate - a.localDate);
-    }, [activities, filters]);
+    }, [filteredActivities]);
 
-    /* Summary stats */
-    const totalMins = activities.reduce((s, a) => s + a.minutes, 0);
+
 
     // PageLoader handled by AppLayout transition
 
     return (
-        <div className="space-y-6 pb-20 max-w-[1400px] mx-auto">
+        <div className="space-y-6 pb-10 max-w-full px-0">
 
             <PageHeader
                 icon={Zap}
@@ -205,7 +201,7 @@ export const ActivityLog = () => {
                                 <Clock size={14} className="text-[#2b8a80] dark:text-[#47C4B7] stroke-[3px]" />
                             </div>
                             <span className="text-[15px] font-black text-[#2b8a80] dark:text-[#47C4B7] tracking-tight">
-                                {formatMins(totalMins)} Total
+                                {formatMins(filteredTotalMins)} Total
                             </span>
                         </div>
                         <button
@@ -246,12 +242,12 @@ export const ActivityLog = () => {
                         <div className="flex flex-nowrap items-center gap-2 overflow-x-auto custom-scrollbar pb-2 sm:pb-0">
                             <div className="flex items-center gap-2 shrink-0">
                                 {/* From Date */}
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black transition-all whitespace-nowrap bg-transparent text-gray-500/80 border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value, timeFilter: 'all' })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
                                 </div>
 
                                 {/* To Date */}
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black capitalize transition-all whitespace-nowrap bg-transparent text-gray-500/80 hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black transition-all whitespace-nowrap bg-transparent text-gray-500/80 border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value, timeFilter: 'all' })} className="bg-transparent border-none text-[11px] font-black focus:ring-0 p-0 w-[105px] text-gray-500/80 hover:text-gray-500 outline-none uppercase" />
                                 </div>
                             </div>
@@ -287,14 +283,18 @@ export const ActivityLog = () => {
                     <div className="flex items-center gap-2 px-3 py-1.5 border border-[#47C4B7]/40 rounded-xl">
                         <Clock size={12} className="text-[#47C4B7]" />
                         <span className="text-[11px] font-black text-[#47C4B7] tracking-tight whitespace-nowrap">
-                            {formatMins(totalMins)} Total
+                            {formatMins(filteredTotalMins)} Total
                         </span>
                     </div>
                 </div>
 
 
                 <div className="space-y-8 mt-4">
-                    {groupedActivities.length === 0 ? (
+                    {globalLoading ? (
+                        <div className="py-20 flex justify-center">
+                            <RefreshCw className="animate-spin text-[#47C4B7]" size={32} />
+                        </div>
+                    ) : groupedActivities.length === 0 ? (
                         <div className="py-20 flex flex-col items-center justify-center text-gray-400">
                             <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-full mb-4">
                                 <Search size={40} className="opacity-20" />
@@ -303,7 +303,7 @@ export const ActivityLog = () => {
                             <p className="text-[15px] opacity-60 mt-1">Start logging your study sessions to track your progress</p>
                         </div>
                     ) : (
-                        <div className="space-y-6 pb-12">
+                        <div className="space-y-6 pb-0">
                             {groupedActivities.map(({ label, items }, index) => (
                                 <HoverCard
                                     key={label}
@@ -315,14 +315,16 @@ export const ActivityLog = () => {
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full">
                                             <Calendar size={14} className="text-[#47C4B7]" />
-                                            <span className="text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                            <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300">
                                                 {label}
                                             </span>
                                         </div>
                                         <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-                                        <span className="text-[13px] font-black text-gray-400">
-                                            {formatMins(items.reduce((s, a) => s + a.minutes, 0))} Total
-                                        </span>
+                                        <div className="flex items-center px-1.5 py-0.5 sm:px-3 sm:py-1 bg-gray-50 dark:bg-gray-800/40 rounded-full border border-gray-100 dark:border-gray-700/50">
+                                            <span className="text-[9px] sm:text-[11px] font-black text-gray-400 dark:text-gray-500">
+                                                {formatMins(items.reduce((s, a) => s + a.minutes, 0))} Total
+                                            </span>
+                                        </div>
                                     </div>
 
                                     {/* Activity rows */}
@@ -345,15 +347,15 @@ export const ActivityLog = () => {
                                                                 <CheckCircle2 size={14} strokeWidth={3} />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <h4 className="text-[15px] font-bold truncate text-gray-700 dark:text-gray-300">
+                                                                <h4 className="text-[12px] sm:text-[15px] font-bold truncate text-gray-700 dark:text-gray-300">
                                                                     {act.method && act.method !== 'Manual' ? act.method : act.type} Session
                                                                 </h4>
-                                                                <p className="text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 flex items-center gap-1.5 line-clamp-1">
+                                                                <p className="text-[10px] sm:text-[13px] text-gray-400 dark:text-gray-500 font-medium mt-1 flex items-center gap-1.5 line-clamp-1">
                                                                     <BookOpen size={12} />
                                                                     {act.topic || 'Activity Session'}
                                                                 </p>
                                                                 {act.createdAt && (
-                                                                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mt-2 sm:mt-3 flex items-center gap-1.5">
+                                                                    <p className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-bold mt-2 sm:mt-3 flex items-center gap-1.5 whitespace-nowrap">
                                                                         <Calendar size={10} className="text-[#47C4B7]" />
                                                                         {new Date(act.createdAt).toLocaleString('en-US', {
                                                                             month: 'short', day: 'numeric',
@@ -365,9 +367,9 @@ export const ActivityLog = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-2 justify-end shrink-0">
-                                                            <div className="px-3 py-1.5 rounded-md text-[15px] font-black flex items-center gap-1.5 bg-[#47C4B7]/10 text-[#47C4B7]">
-                                                                <Clock size={14} className="opacity-80" />
-                                                                {formatMins(act.minutes)}
+                                                            <div className="px-2 py-0.5 rounded-md text-[9px] sm:text-[13px] font-black flex items-center gap-1 bg-[#47C4B7]/10 text-[#47C4B7]">
+                                                                <Clock size={10} className="opacity-80" />
+                                                                {formatDisplayTime(act.minutes / 60)}
                                                             </div>
 
                                                             <button
@@ -375,7 +377,7 @@ export const ActivityLog = () => {
                                                                 className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                                                                 title="Delete Session"
                                                             >
-                                                                <Trash2 size={16} />
+                                                                <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                                                             </button>
                                                         </div>
                                                     </motion.div>
