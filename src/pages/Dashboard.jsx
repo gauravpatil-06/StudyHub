@@ -192,17 +192,16 @@ export const Dashboard = () => {
 
     // ── Mobile/Foldable Back Button Intercept ──
     useEffect(() => {
-        // Targeted check: Mobile UA OR (Touch device AND width <= 900px)
-        // Explicitly excludes Nest Hub/Max (CrKey) as requested
+        // Targeted check: Any Mobile device OR any screen with width <= 1024px (Foldable/Tablet)
         const isMobileOrFoldable = () => {
             const ua = navigator.userAgent;
             const isSmartDisplay = /CrKey|NestHub|GoogleTV/i.test(ua);
             if (isSmartDisplay) return false;
 
             const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-            const isTargetSize = navigator.maxTouchPoints > 0 && window.innerWidth <= 900;
+            const isSmallOrFoldable = window.innerWidth <= 1024;
 
-            return isMobileUA || isTargetSize;
+            return isMobileUA || isSmallOrFoldable;
         };
 
         if (!isMobileOrFoldable()) return;
