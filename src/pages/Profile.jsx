@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { PageLoader } from '../components/ui/PageLoader';
+import { UserAvatar } from '../components/ui/UserAvatar';
 
 const cardBaseStyle = {
     transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease',
@@ -438,19 +439,12 @@ export const Profile = () => {
                             style={{ width: 'clamp(72px, 22vw, 180px)', height: 'clamp(72px, 22vw, 180px)' }}
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            {formData.avatar ? (
-                                <img
-                                    src={formData.avatar}
-                                    alt="Profile Avatar"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = '/default-avatar.png';
-                                    }}
-                                />
-                            ) : (
-                                <User size={56} className="text-gray-300 dark:text-gray-600 w-1/2 h-1/2" />
-                            )}
+                            <UserAvatar 
+                                name={user?.name} 
+                                avatar={formData.avatar} 
+                                size="w-full h-full" 
+                                className="border-none shadow-none text-[48px] sm:text-[64px]" 
+                            />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                 <Camera className="text-white" size={32} />
                             </div>

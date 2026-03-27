@@ -4,6 +4,7 @@ import { BookOpen, Calendar, Search, RefreshCw, Trash2, User, FileText, External
 import api, { BASE_URL } from '../../utils/api';
 import { PageLoader } from '../../components/ui/PageLoader';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { UserAvatar } from '../../components/ui/UserAvatar';
 import { toast } from 'react-hot-toast';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
 
@@ -388,13 +389,7 @@ export const AdminMaterials = () => {
                                     </td>
                                     <td className="px-[15px] py-5 border-r border-gray-800/20 dark:border-white/40 text-center">
                                        <div className="flex items-center justify-center gap-3">
-                                            {m.userId?.avatar ? (
-                                                <img src={m.userId.avatar} alt={m.userId.name} className="w-9 h-9 rounded-full object-cover border-2 border-[#47C4B7]/20 shadow-sm shrink-0 p-[2px] bg-white dark:bg-gray-800" />
-                                            ) : (
-                                                <div className="w-9 h-9 shrink-0 rounded-full bg-[#47C4B7]/10 flex items-center justify-center text-[#47C4B7] font-black text-[13px] border border-[#47C4B7]/20 uppercase">
-                                                    {m.userId?.name?.charAt(0) || '?'}
-                                                </div>
-                                            )}
+                                            <UserAvatar name={m.userId?.name} avatar={m.userId?.avatar} size="w-9 h-9" />
                                             <span className="text-xs font-black text-gray-900 dark:text-white whitespace-nowrap">{m.userId?.name || 'Deleted User'}</span>
                                         </div>
                                     </td>

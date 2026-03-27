@@ -4,11 +4,10 @@ import {
     BookOpen, Zap, Target, BarChart3, Flame,
     BookMarked, Brain, History, ListTodo,
     CheckCircle2, ChevronDown, ChevronRight, Mail, Phone, MapPin,
-    User, Globe, Sparkles, Rocket, ShieldCheck,
-    Clock, Calendar, Star, Info, Heart, Send, MessageSquare, RefreshCw, ExternalLink, Gem as Diamond, ArrowRight, Handshake
+    Globe, Sparkles, Rocket, ShieldCheck,
+    Clock, Calendar, Star, Info, Heart, Send, MessageSquare, RefreshCw, ExternalLink, Gem as Diamond, ArrowRight
 } from 'lucide-react';
 import logo from '../assets/studyhub_logo.png';
-import profileImage from '../assets/profile-image.jpeg';
 
 const cardBaseStyle = {
     transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease',
@@ -463,72 +462,6 @@ export const About = () => {
                     ))}
                 </div>
             </div>
-
-            {/* DEVELOPER SECTION */}
-            <HoverCard
-                rKey={`dev-${refreshKey}`}
-                delay={0.4}
-                className="bg-gradient-to-br from-white to-[#47C4B7]/[0.02] dark:from-gray-900 dark:to-gray-800/50 rounded-3xl p-8 md:p-10 shadow-2xl border border-gray-100 dark:border-gray-800 relative z-0 mt-10 overflow-hidden"
-            >
-                {/* Decorative background element */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#47C4B7]/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-
-                <div className="flex items-center justify-between mb-4 sm:mb-2 border-b border-gray-100 dark:border-gray-800 pb-4 sm:pb-6 relative z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="p-1.5 sm:p-2.5 bg-[#47C4B7]/10 rounded-2xl text-[#47C4B7] shadow-sm">
-                            <User size={14} className="sm:w-[20px] sm:h-[20px]" strokeWidth={2.5} />
-                        </div>
-                        <h3 className="text-[14px] sm:text-[1.1rem] font-bold tracking-tight text-gray-900 dark:text-white">Developer</h3>
-                    </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-5 md:gap-20 md:items-start items-center">
-                    <div className="shrink-0 md:ml-5 flex flex-col items-center gap-4">
-                        <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden shadow-lg border-2 border-white dark:border-gray-800">
-                            <img src={profileImage} alt="Developer" className="w-full h-full object-cover" />
-                        </div>
-                        <a
-                            href="https://portfolio-gaurav-patil.netlify.app/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold text-[13px] sm:text-[0.95rem] hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/link"
-                        >
-                            <span>Portfolio</span>
-                            <ExternalLink size={14} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-                        </a>
-                    </div>
-
-                    <div className="flex-1 space-y-6 w-full">
-                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-x-4 md:gap-x-12 gap-y-4 md:gap-y-7 relative z-10 pl-0">
-                            {[
-                                { label: "Name", value: "Gaurav Patil" },
-                                { label: "Phone", value: "7875335539", href: "tel:7875335539" },
-                                { label: "Location", value: "Pune, Maharashtra, India" },
-                                { label: "Email", value: "gp949958@gmail.com", href: "mailto:gp949958@gmail.com" },
-                                { label: "LinkedIn", value: "gaurav-pati06", href: "https://www.linkedin.com/in/gaurav-pati06/" },
-                                { label: "GitHub", value: "gauravpatil-06", href: "https://github.com/gauravpatil-06" }
-                            ].map((item, i) => (
-                                <div key={item.label} className="flex flex-col gap-0.5">
-                                    <p className="text-[11px] sm:text-[1rem] font-bold text-gray-900/85 dark:text-gray-100">{item.label}</p>
-                                    {item.href ? (
-                                        <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all break-words">
-                                            {item.value}
-                                        </a>
-                                    ) : (
-                                        <span className="text-[10px] sm:text-[0.875rem] font-bold text-gray-900/60 dark:text-gray-400">{item.value}</span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <Handshake className="text-[#47C4B7] shrink-0 w-[14px] h-[14px] sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
-                            <p className="text-gray-900/50 dark:text-gray-400/50 font-bold text-[10px] sm:text-[0.875rem] italic">
-                                Feel free to connect for collaboration or queries.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </HoverCard>
 
             {/* Footer */}
             <div className="pt-6 pb-2 text-center">

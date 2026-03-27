@@ -4,6 +4,7 @@ import { ListTodo, CheckCircle2, Clock, Calendar, Search, RefreshCw, Trash2, Use
 import api, { BASE_URL } from '../../utils/api';
 import { PageLoader } from '../../components/ui/PageLoader';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { UserAvatar } from '../../components/ui/UserAvatar';
 import { toast } from 'react-hot-toast';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
 
@@ -391,21 +392,7 @@ export const AdminTasks = () => {
                                     </td>
                                     <td className="px-[15px] py-5 border-r border-gray-800/20 dark:border-white/40 text-center">
                                        <div className="flex items-center justify-center gap-3">
-                                            {t.userId?.avatar ? (
-                                                <img
-                                                    src={t.userId.avatar}
-                                                    alt={t.userId.name}
-                                                    className="w-9 h-9 rounded-full object-cover border-2 border-[#47C4B7]/20 shadow-sm shrink-0 p-[2px] bg-white dark:bg-gray-800"
-                                                    onError={(e) => {
-                                                        e.target.onerror = null;
-                                                        e.target.src = '/default-avatar.png';
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="w-9 h-9 shrink-0 rounded-full bg-[#47C4B7]/10 flex items-center justify-center text-[#47C4B7] font-black text-[13px] border border-[#47C4B7]/20 uppercase">
-                                                    {t.userId?.name?.charAt(0) || '?'}
-                                                </div>
-                                            )}
+                                            <UserAvatar name={t.userId?.name} avatar={t.userId?.avatar} size="w-9 h-9" />
                                             <span className="text-xs font-black text-gray-900 dark:text-white whitespace-nowrap">{t.userId?.name || 'Deleted User'}</span>
                                         </div>
                                     </td>

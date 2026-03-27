@@ -20,6 +20,8 @@ import activityRoutes from './routes/activity.js';
 import goalsRoutes from './routes/goals.js';
 import feedbackRoutes from './routes/feedback.js';
 import historyRoutes from './routes/history.js';
+import quoteRoutes from './routes/quotes.js';
+
 
 dotenv.config();
 
@@ -59,6 +61,8 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/goals', goalsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/quotes', quoteRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('StudyHub API is running...');

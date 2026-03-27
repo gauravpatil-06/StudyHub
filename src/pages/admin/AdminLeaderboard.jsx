@@ -4,6 +4,7 @@ import { Trophy, Medal, Crown, Zap, Clock, CheckSquare, RefreshCw, Info, Search,
 import api from '../../utils/api';
 import { PageLoader } from '../../components/ui/PageLoader';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { UserAvatar } from '../../components/ui/UserAvatar';
 import { toast } from 'react-hot-toast';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
 
@@ -363,21 +364,12 @@ export const AdminLeaderboard = () => {
                                         {/* User Name */}
                                         <td className="px-[15px] py-5 border-r border-gray-800/20 dark:border-white/40 text-center">
                                            <div className="flex items-center justify-center gap-3">
-                                                {u.avatar ? (
-                                                    <img
-                                                        src={u.avatar}
-                                                        alt={u.name}
-                                                        className="w-9 h-9 rounded-full object-cover border-2 border-[#47C4B7]/20 shadow-sm shrink-0 p-[2px] bg-white dark:bg-gray-800"
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = '/default-avatar.png';
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <div className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center font-black text-[13px] border border-[#47C4B7]/20 ${i === 0 ? 'bg-amber-400/10 text-amber-500' : 'bg-[#47C4B7]/10 text-[#47C4B7]'}`}>
-                                                        {u.name.charAt(0)}
-                                                    </div>
-                                                )}
+                                                <UserAvatar 
+                                                    name={u.name} 
+                                                    avatar={u.avatar} 
+                                                    size="w-9 h-9" 
+                                                    className={i === 0 ? 'border-amber-400' : ''} 
+                                                />
                                                 <span className="text-xs font-black text-gray-900 dark:text-white whitespace-nowrap">{u.name}</span>
                                             </div>
                                         </td>

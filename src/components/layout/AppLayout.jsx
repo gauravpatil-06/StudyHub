@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { PageLoader } from '../ui/PageLoader';
+import { UserAvatar } from '../ui/UserAvatar';
 import { Info } from 'lucide-react';
 
 /* ─── Nav Structure ─── */
@@ -261,21 +262,7 @@ export const AppLayout = () => {
                 {/* User row */}
                 <div className="flex items-center justify-between px-2 gap-2">
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                        {user?.avatar ? (
-                            <img
-                                src={user.avatar}
-                                alt="avatar"
-                                className="w-9 h-9 rounded-full border border-[#47C4B7] object-cover flex-shrink-0"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = '/default-avatar.png';
-                                }}
-                            />
-                        ) : (
-                            <div className="w-9 h-9 rounded-full bg-[#47C4B7]/10 border border-[#47C4B7]/30 flex items-center justify-center flex-shrink-0">
-                                <User size={18} className="text-[#47C4B7]" />
-                            </div>
-                        )}
+                        <UserAvatar name={user?.name} avatar={user?.avatar} size="w-9 h-9" />
                         <div className="flex flex-col min-w-0">
                             <span className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name}</span>
                             <span className="text-[0.7rem] text-gray-400 truncate">{user?.email}</span>

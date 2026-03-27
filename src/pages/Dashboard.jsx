@@ -13,6 +13,10 @@ import { useActivities } from '../context/ActivityContext';
 import api, { BASE_URL } from '../utils/api';
 import toast from 'react-hot-toast';
 import { PageLoader } from '../components/ui/PageLoader';
+import { ExitConfirmModal } from '../components/ui/ExitConfirmModal';
+import { WelcomeModal } from '../components/ui/WelcomeModal';
+
+
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -38,38 +42,8 @@ const lightTheme = createTheme({
     },
 });
 
-const MOTIVATIONAL_QUOTES = [
-    "Learning never exhausts the mind. - Leonardo da Vinci",
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Success is not final, failure is not fatal. - Winston Churchill",
-    "Believe you can and you're halfway there. - Theodore Roosevelt",
-    "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-    "The secret of getting ahead is getting started. - Mark Twain",
-    "It always seems impossible until it's done. - Nelson Mandela",
-    "Dream big and dare to fail. - Norman Vaughan",
-    "What you get by achieving your goals is not as important as what you become. - Zig Ziglar",
-    "Your limitation—it's only your imagination.",
-    "Push yourself, because no one else is going to do it for you.",
-    "Sometimes later becomes never. Do it now.",
-    "Great things never come from comfort zones.",
-    "Success doesn’t just find you. You have to go out and get it.",
-    "The harder you work for something, the greater you’ll feel when you achieve it.",
-    "Wake up with determination. Go to bed with satisfaction.",
-    "Do something today that your future self will thank you for.",
-    "Little things make big days.",
-    "It’s going to be hard, but hard does not mean impossible.",
-    "Don’t stop when you’re tired. Stop when you’re done.",
-    "Focus on your goal. Don't look in any direction but ahead.",
-    "A year from now you may wish you had started today. - Karen Lamb",
-    "Education is the most powerful weapon which you can use to change the world. - Nelson Mandela",
-    "Work hard in silence, let your success be your noise. - Frank Ocean",
-    "The expert in anything was once a beginner. - Helen Hayes",
-    "There are no shortcuts to any place worth going. - Beverly Sills",
-    "Genius is 1% inspiration and 99% perspiration. - Thomas Edison",
-    "Strive for progress, not perfection.",
-    "You don’t have to be great to start, but you have to start to be great. - Zig Ziglar",
-    "Hard work beats talent when talent doesn’t work hard. - Tim Notke"
-];
+
+
 
 /* ─────────────────────────────────────────────────────────────────
    Inline styles for the zoom + border hover effect on cards
@@ -159,6 +133,8 @@ export const Dashboard = () => {
     const [deletingActivityId, setDeletingActivityId] = useState(null);
     const [deletingTaskId, setDeletingTaskId] = useState(null);
     const [expandedTasks, setExpandedTasks] = useState(new Set());
+    const [quote, setQuote] = useState({ content: 'Loading motivation...', author: '' });
+
 
     // Form States
     const [title, setTitle] = useState('');
@@ -192,8 +168,70 @@ export const Dashboard = () => {
     const [actType, setActType] = useState('Study');
     const [actTopic, setActTopic] = useState('');
     const [actSaving, setActSaving] = useState(false);
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+    // ── Welcome Modal Check (Production Logic: Only show first time) ──
+    useEffect(() => {
+        if (user && user._id) {
+            const welcomeKey = `studyhub_welcome_seen_${user._id}`;
+            const shown = localStorage.getItem(welcomeKey);
+            if (!shown) {
+                // Very short delay to let the dashboard render first
+                const timer = setTimeout(() => setIsWelcomeModalOpen(true), 800);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [user]);
+
+    const handleConfirmWelcome = () => {
+        if (user && user._id) {
+            const welcomeKey = `studyhub_welcome_seen_${user._id}`;
+            localStorage.setItem(welcomeKey, 'true');
+        }
+        setIsWelcomeModalOpen(false);
+    };
+
+
+    const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+
+    // ── Mobile/Foldable Back Button Intercept ──
+    useEffect(() => {
+        // Targeted check: Mobile UA OR (Touch device AND width <= 900px)
+        // Explicitly excludes Nest Hub/Max (CrKey) as requested
+        const isMobileOrFoldable = () => {
+            const ua = navigator.userAgent;
+            const isSmartDisplay = /CrKey|NestHub|GoogleTV/i.test(ua);
+            if (isSmartDisplay) return false;
+
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            const isTargetSize = navigator.maxTouchPoints > 0 && window.innerWidth <= 900;
+
+            return isMobileUA || isTargetSize;
+        };
+
+        if (!isMobileOrFoldable()) return;
+
+        const handlePopState = (e) => {
+            if (window.location.pathname === '/dashboard') {
+                e.preventDefault();
+                setIsExitModalOpen(true);
+                window.history.pushState(null, null, window.location.pathname);
+            }
+        };
+
+        window.history.pushState(null, null, window.location.pathname);
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const handleConfirmExit = () => {
+        setIsExitModalOpen(false);
+        // Go back twice: once to clear our trap, once to actually exit the site/page
+        window.history.go(-2);
+    };
 
     // ── Goals States ──
+
     const [editGoals, setEditGoals] = useState(false);
     const [goalForm, setGoalForm] = useState({ codingGoalHrs: 100, watchingGoalHrs: 50, studyGoalHrs: 100 });
 
@@ -208,11 +246,20 @@ export const Dashboard = () => {
         }
     }, [goals]);
 
-    // Initial Quote selection
-    const quote = useMemo(() => {
-        const day = new Date().getDate();
-        return MOTIVATIONAL_QUOTES[(day - 1) % MOTIVATIONAL_QUOTES.length];
+    // Quote selection from Database
+    useEffect(() => {
+        const fetchDailyQuote = async () => {
+            try {
+                const { data } = await api.get('/api/quotes/daily');
+                setQuote(data);
+            } catch (err) {
+                console.error('Failed to fetch daily quote:', err);
+                setQuote({ content: "The secret of getting ahead is getting started.", author: "Mark Twain" });
+            }
+        };
+        fetchDailyQuote();
     }, []);
+
 
     // ── Fetch today's activities (only on explicit refresh, not on mount) ──
     const fetchActivityData = async (refresh = false) => {
@@ -696,8 +743,9 @@ export const Dashboard = () => {
                     </button>
                 </div>
                 <p className="text-[13px] font-semibold italic text-gray-500 border-l-4 border-[#47C4B7] pl-3 pr-2 w-full break-words">
-                    "{quote}"
+                    "{quote.content}"
                 </p>
+
             </motion.div>
 
             {/* Top Stat Cards Grid - 5 columns on laptop, 2 columns on mobile */}
@@ -1612,6 +1660,18 @@ export const Dashboard = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            <ExitConfirmModal
+                isOpen={isExitModalOpen}
+                onConfirm={handleConfirmExit}
+                onCancel={() => setIsExitModalOpen(false)}
+            />
+            <WelcomeModal
+                isOpen={isWelcomeModalOpen}
+                userName={user?.name?.split(' ')[0] || 'Scholar'}
+                onConfirm={handleConfirmWelcome}
+            />
         </div>
     );
 };
+
+
