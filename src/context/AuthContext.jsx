@@ -87,7 +87,8 @@ export const AuthProvider = ({ children }) => {
     const register = async (name, college, email, password) => {
         try {
             const response = await api.post('/auth/register', { name, college, email, password });
-            const { token, ...userData } = response.data;
+            const { token, isNewUser, ...userData } = response.data;
+            if (isNewUser) localStorage.setItem('studyhub_welcome_new_signup', 'true');
 
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(userData));
@@ -102,7 +103,8 @@ export const AuthProvider = ({ children }) => {
     const googleLogin = async (credential, userProfile) => {
         try {
             const response = await api.post('/auth/google', { credential, userProfile });
-            const { token: jwtToken, ...userData } = response.data;
+            const { token: jwtToken, isNewUser, ...userData } = response.data;
+            if (isNewUser) localStorage.setItem('studyhub_welcome_new_signup', 'true');
 
             localStorage.setItem('token', jwtToken);
             localStorage.setItem('user', JSON.stringify(userData));

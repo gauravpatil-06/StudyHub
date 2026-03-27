@@ -53,6 +53,7 @@ router.post('/register', async (req, res) => {
             res.status(201).json({
                 ...user._doc,
                 token: generateToken(user._id),
+                isNewUser: true
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -137,6 +138,7 @@ router.post('/google', async (req, res) => {
 
         let user = await User.findOne({ email });
 
+        let isNewUser = false;
         if (!user) {
             user = await User.create({
                 name,
@@ -144,6 +146,7 @@ router.post('/google', async (req, res) => {
                 avatar: avatarUrl,
                 provider: 'google',
             });
+            isNewUser = true;
         } else {
             // Update avatar if missing or if it's a Google user to keep it fresh
             if (avatarUrl && (!user.avatar || user.provider === 'google')) {
@@ -158,6 +161,7 @@ router.post('/google', async (req, res) => {
             ...user._doc,
             avatar: user.avatar, // Ensure the latest avatar is sent
             token,
+            isNewUser,
             role: user.role || 'user',
             name: user.name || 'User'
         });

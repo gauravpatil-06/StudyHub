@@ -170,24 +170,20 @@ export const Dashboard = () => {
     const [actSaving, setActSaving] = useState(false);
     const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
-    // ── Welcome Modal Check (Production Logic: Only show first time) ──
+    // ── Welcome Modal Check (Only show to brand new signups) ──
     useEffect(() => {
-        if (user && user._id) {
-            const welcomeKey = `studyhub_welcome_seen_${user._id}`;
-            const shown = localStorage.getItem(welcomeKey);
-            if (!shown) {
-                // Very short delay to let the dashboard render first
-                const timer = setTimeout(() => setIsWelcomeModalOpen(true), 800);
-                return () => clearTimeout(timer);
-            }
+        const isNewSignup = localStorage.getItem('studyhub_welcome_new_signup');
+        if (isNewSignup) {
+            // Once detected, hide it from future refreshes
+            localStorage.removeItem('studyhub_welcome_new_signup');
+            
+            // Short delay to let the dashboard render first
+            const timer = setTimeout(() => setIsWelcomeModalOpen(true), 1200);
+            return () => clearTimeout(timer);
         }
-    }, [user]);
+    }, []);
 
     const handleConfirmWelcome = () => {
-        if (user && user._id) {
-            const welcomeKey = `studyhub_welcome_seen_${user._id}`;
-            localStorage.setItem(welcomeKey, 'true');
-        }
         setIsWelcomeModalOpen(false);
     };
 
