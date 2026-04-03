@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { AboutLandingPage } from './AboutLandingPage';
+import AnimatedCounter from '../components/common/AnimatedCounter';
 
 export const LandingPage = () => {
     const navigate = useNavigate();
@@ -432,7 +433,7 @@ export const LandingPage = () => {
                                 </div>
                                 <div className="space-y-0.5">
                                     <div className="text-base sm:text-xl font-black text-gray-900 dark:text-white tracking-tight">
-                                        {stat.value}
+                                        <AnimatedCounter target={stat.value} duration={2} />
                                     </div>
                                     <div className="text-[9px] sm:text-[13px] font-bold text-gray-500 dark:text-gray-400 leading-tight">
                                         {stat.label}
