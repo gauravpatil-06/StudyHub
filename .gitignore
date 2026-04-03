@@ -1,3 +1,13 @@
+# Node modules
 node_modules/
 server/node_modules/
+
+# Environment files
+.env
 server/.env
+
+# Uploads (ignore all files)
+server/uploads/*
+!server/uploads/avatars/.gitkeep
+!server/uploads/notes/.gitkeep
+!server/uploads/materials/.gitkeep
